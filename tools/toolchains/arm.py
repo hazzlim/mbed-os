@@ -298,9 +298,10 @@ class ARM(mbedToolchain):
         system such as the processor architecture and cpu type.
 
         The build system (at this point) will have constructed what it considers to be a correct shebang
-        line for this build. If this differs from the line in the scatter file then the scatter file
-        will be rewritten by this function to contain the build-system-generated shebang line. Note
-        that the rewritten file will be placed in the BUILD output directory.
+        line for this build. We have to append to this the directive to include the Mbed configuration
+        header file in order for the preprocessor to be invoked with the correct macro definitions.
+        the scatter file will be rewritten by this function to contain the build-system-generated shebang
+        line. Note  that the rewritten file will be placed in the BUILD output directory.
 
         Include processing
 
@@ -341,11 +342,15 @@ class ARM(mbedToolchain):
         with open(sc_fileref.path, "r") as input:
             lines = input.readlines()
 
-            # If the existing scatter file has no shebang line, or the line that it does have
-            # matches the desired line then the existing scatter file is used directly without rewriting.
-            if (lines[0].startswith(self.SHEBANG) or
-                    not lines[0].startswith("#!")):
+            # If the existing scatter file has no shebang line, the existing
+            # scatter file is used directly without rewriting.
+            if (not lines[0].startswith("#!")):
                 return sc_fileref
+
+            # Include the Mbed configuration header file.
+            config_header = self.get_config_header()
+            if config_header is not None:
+                self.SHEBANG += f" -include {config_header}"
 
             new_scatter = join(self.build_dir, ".link_script.sct")
             if cur_dir_name is None:
