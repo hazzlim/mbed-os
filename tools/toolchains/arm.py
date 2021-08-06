@@ -438,8 +438,11 @@ class ARM(mbedToolchain):
         return "_Z%i%sv" % (len(name), name)
 
     @staticmethod
-    def make_ld_define(name, value):
-        return "--predefine=\"-D%s=%s\"" % (name, value)
+    def make_ld_define(name, value=None):
+        define = "-D%s" % name
+        if value:
+            define += "=%s" % value
+        return "--predefine=\"%s\"" % define
 
     @staticmethod
     def redirect_symbol(source, sync, build_dir):
@@ -605,6 +608,9 @@ class ARMC6(ARM_STD):
             # in mbedToolchain.get_symbols)
             define_string = self.make_ld_define("DOMAIN_NS", "0x1")
             self.flags["ld"].append(define_string)
+
+            for d in self.get_symbols():
+                self.flags["ld"].append(self.make_ld_define(d))
 
         core = target.core_without_NS
         cpu = {
