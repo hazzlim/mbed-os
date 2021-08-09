@@ -35,4 +35,4 @@ comment:
   require_changes: no
 
 ignore:
-  - "**/tests/**"
+  - "**/tests"
