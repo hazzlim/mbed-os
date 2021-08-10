@@ -67,7 +67,7 @@ matrix:
         - ctest --build-and-test . build --build-generator Ninja --build-options -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 --test-command ctest        
         - gcovr --gcov-executable gcov-7 -r . ./build -s -x coverage.xml -e ".*\.h" --exclude-directories=$TRAVIS_BUILD_DIR/build/UNITTESTS --exclude-directories=$TRAVIS_BUILD_DIR/build/_deps
         - ccache -s
-        - curl -Os https://uploader.codecov.io/latest/linux/codecov 
+        - curl -Os https://uploader.codecov.io/latest/linux/codecov
         - chmod +x codecov
-        - bash <(curl -s https://codecov.io/bash) -f coverage.xml -t 57166f89-22b3-4949-9488-ddd3c78123fb
+        - ./codecov -F unittests -f "coverage.xml" -t 57166f89-22b3-4949-9488-ddd3c78123fb
 
