@@ -69,5 +69,5 @@ matrix:
         - ccache -s
         - curl -Os https://uploader.codecov.io/latest/linux/codecov 
         - chmod +x codecov
-        - ./codecov -f coverage.xml -t 57166f89-22b3-4949-9488-ddd3c78123fb
+        - bash <(curl -s https://codecov.io/bash) -f coverage.xml -t 57166f89-22b3-4949-9488-ddd3c78123fb
 
