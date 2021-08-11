@@ -34,5 +34,5 @@ comment:
   require_changes: no
 
 ignore:
-  - "**/tests/**/*"
-  - "**/test/**/*"
+  - "**/tests/**"
+  - "**/test/**"
