@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2021 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+#include "hal/port_api.h"
 
-typedef enum {
-    SPI_1,
-} SPIName;
+#if DEVICE_PORTIN || DEVICE_PORTOUT
 
-#endif
+PinName port_pin(PortName port, int pin_n)
+{
+    return NC;
+}
+
+void port_init(port_t *obj, PortName port, int mask, PinDirection dir)
+{
+}
+
+void port_mode(port_t *obj, PinMode mode)
+{
+}
+
+void port_dir(port_t *obj, PinDirection dir)
+{
+}
+
+void port_write(port_t *obj, int value)
+{
+}
+
+int port_read(port_t *obj)
+{
+    return 0;
+}
+
+#endif // DEVICE_PORTIN || DEVICE_PORTOUT

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2021 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,16 @@
  * limitations under the License.
  */
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+#include "hal/itm_api.h"
 
-typedef enum {
-    SPI_1,
-} SPIName;
+#if DEVICE_ITM
 
-#endif
+void mbed_itm_init(void)
+{
+}
+
+void mbed_itm_send_block(uint32_t port, const void *data, size_t len)
+{
+}
+
+#endif // DEVICE_ITM

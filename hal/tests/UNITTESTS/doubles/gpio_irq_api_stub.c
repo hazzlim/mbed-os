@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2021 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+#include "hal/gpio_irq_api.h"
 
-typedef enum {
-    SPI_1,
-} SPIName;
+int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uintptr_t context)
+{
+    return 0;
+}
 
-#endif
+void gpio_irq_free(gpio_irq_t *obj)
+{
+}
+
+void gpio_irq_set(gpio_irq_t *obj, gpio_irq_event event, uint32_t enable)
+{
+}
+
+void gpio_irq_enable(gpio_irq_t *obj)
+{
+}
+
+void gpio_irq_disable(gpio_irq_t *obj)
+{
+}

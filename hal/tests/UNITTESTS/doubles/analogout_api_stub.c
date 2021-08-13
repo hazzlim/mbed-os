@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2021 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,44 @@
  * limitations under the License.
  */
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+#include "hal/analogout_api.h"
+#include <stddef.h>
 
-typedef enum {
-    SPI_1,
-} SPIName;
+#if DEVICE_ANALOGOUT
 
-#endif
+void analogout_init_direct(dac_t *obj, const PinMap *pinmap)
+{
+}
+
+void analogout_init(dac_t *obj, PinName pin)
+{
+}
+
+void analogout_free(dac_t *obj)
+{
+}
+
+void analogout_write(dac_t *obj, float value)
+{
+}
+
+void analogout_write_u16(dac_t *obj, uint16_t value)
+{
+}
+
+float analogout_read(dac_t *obj)
+{
+    return 0;
+}
+
+uint16_t analogout_read_u16(dac_t *obj)
+{
+    return 0;
+}
+
+const PinMap *analogout_pinmap(void)
+{
+    return NULL;
+}
+
+#endif // DEVICE_ANALOGOUT

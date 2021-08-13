@@ -70,6 +70,10 @@ struct can_s {
     int unused;
 };
 
+struct ospi_s {
+    int unused;
+};
+
 #include "gpio_object.h"
 
 #ifdef __cplusplus
