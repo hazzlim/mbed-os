@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2022 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hal/lp_ticker_api.h"
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+#include <stddef.h>
 
-typedef enum {
-    SPI_1,
-} SPIName;
+#if DEVICE_LPTICKER
 
-#endif
+const ticker_data_t *get_lp_ticker_data(void)
+{
+    return NULL;
+}
+
+#endif // DEVICE_LPTICKER

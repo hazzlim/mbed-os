@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Arm Limited and affiliates.
+ * Copyright (c) 2022 Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hal/ticker_api.h"
 
-#ifndef MBED_PERIPHERALNAMES_H
-#define MBED_PERIPHERALNAMES_H
+void ticker_set_handler(const ticker_data_t *const ticker, ticker_event_handler handler)
+{
+}
 
-typedef enum {
-    SPI_1,
-} SPIName;
+void ticker_remove_event(const ticker_data_t *const ticker, ticker_event_t *obj)
+{
+}
 
-#endif
+void ticker_insert_event(const ticker_data_t *const ticker, ticker_event_t *obj, timestamp_t timestamp, uintptr_t id)
+{
+}
+
+void ticker_insert_event_us(const ticker_data_t *const ticker, ticker_event_t *obj, us_timestamp_t timestamp, uintptr_t id)
+{
+}
+
+us_timestamp_t ticker_read_us(const ticker_data_t *const ticker)
+{
+    return 0;
+}
