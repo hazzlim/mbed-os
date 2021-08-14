@@ -32,6 +32,9 @@ target_sources(mbed-stubs-platform
         nvic_wrapper_stub.c
         randLIB_stub.c
         randLIB_stub.cpp
+        mbed_thread_stub.cpp
+        mbed_power_mgmt_stub.cpp
+        CriticalSectionLock_stub.cpp
 )
 target_include_directories(mbed-stubs-platform
     PUBLIC
