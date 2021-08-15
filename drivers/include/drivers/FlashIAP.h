@@ -26,7 +26,7 @@
 
 #if DEVICE_FLASH || defined(DOXYGEN_ONLY)
 
-#include "flash_api.h"
+#include "hal/flash_api.h"
 #include "platform/SingletonPtr.h"
 #include "platform/PlatformMutex.h"
 #include "platform/NonCopyable.h"
