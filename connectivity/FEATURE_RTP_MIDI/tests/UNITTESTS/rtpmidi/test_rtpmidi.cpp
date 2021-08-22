@@ -17,6 +17,10 @@
 
 #include "gtest/gtest.h"
 
+class RTPMIDI {
+
+};
+
 TEST(RTPMIDI, AcceptsInvitation)
 {
     RTPMIDI rtpmidi;
