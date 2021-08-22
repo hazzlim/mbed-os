@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-int main()
+TEST(RTPMIDI, AcceptsInvitation)
 {
-    return 0;
+    RTPMIDI rtpmidi;
 }
