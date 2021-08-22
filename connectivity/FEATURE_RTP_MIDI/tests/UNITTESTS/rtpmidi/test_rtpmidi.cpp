@@ -20,7 +20,7 @@
 class RTPMIDI {
 public:
     std::string respond(const std::string& word) const {
-        return "";
+        return "OK";
     }
 };
 
@@ -30,4 +30,6 @@ TEST(RTPMIDI, AcceptsInvitation)
 {
     RTPMIDI rtpmidi;
     auto response = rtpmidi.respond("IN");
+
+    ASSERT_EQ(response, "OK");
 }
