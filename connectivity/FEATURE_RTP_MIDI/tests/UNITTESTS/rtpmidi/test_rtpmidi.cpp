@@ -15,13 +15,19 @@
  * limitations under the License.
  */
 
-#include "gtest/gtest.h"
+#include <string>
 
 class RTPMIDI {
-
+public:
+    std::string respond(const std::string& word) const {
+        return "";
+    }
 };
+
+#include "gtest/gtest.h"
 
 TEST(RTPMIDI, AcceptsInvitation)
 {
     RTPMIDI rtpmidi;
+    auto response = rtpmidi.respond("IN");
 }
