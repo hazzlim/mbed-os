@@ -14,6 +14,7 @@ target_sources(${TEST_NAME}
 
 target_link_libraries(${TEST_NAME}
     PRIVATE
+        mbed-rtp-midi
         gmock_main
 )
 

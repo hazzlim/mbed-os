@@ -26,6 +26,7 @@ add_library(mbed-wifi INTERFACE)
 
 if(${CMAKE_CROSSCOMPILING})
     # The directories below contain optional target libraries
+    add_subdirectory(FEATURE_RTP_MIDI EXCLUDE_FROM_ALL)
     add_subdirectory(FEATURE_BLE EXCLUDE_FROM_ALL)
     add_subdirectory(cellular EXCLUDE_FROM_ALL)
     add_subdirectory(drivers EXCLUDE_FROM_ALL)
