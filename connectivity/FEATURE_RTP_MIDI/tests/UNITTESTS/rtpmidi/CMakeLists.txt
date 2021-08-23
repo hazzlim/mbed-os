@@ -9,11 +9,22 @@ add_executable(${TEST_NAME})
 
 target_sources(${TEST_NAME}
     PRIVATE
+        ${mbed-os_SOURCE_DIR}/connectivity/netsocket/source/InternetSocket.cpp
+        ${mbed-os_SOURCE_DIR}/connectivity/netsocket/source/InternetDatagramSocket.cpp
+        ${mbed-os_SOURCE_DIR}/connectivity/netsocket/source/UDPSocket.cpp
         test_rtpmidi.cpp
 )
 
 target_link_libraries(${TEST_NAME}
     PRIVATE
+        mbed-headers-drivers
+        mbed-headers-hal
+        mbed-headers-rtos
+        mbed-headers-platform
+        mbed-headers-netsocket
+        mbed-stubs-netsocket
+        mbed-stubs-events
+        mbed-stubs-platform
         mbed-rtp-midi
         gmock_main
 )

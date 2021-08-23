@@ -20,6 +20,7 @@
 
 #include <string>
 #include <cstring>
+#include "netsocket/UDPSocket.h"
 
 enum apple_midi_defs : uint32_t {
     SIGNATURE        =  0xFFFFU,
@@ -77,9 +78,30 @@ typedef struct {
     uint32_t sender_ssrc;
 } midi_packet_header_t;
 
+/* Byte Swapping Functions */
+void to_network_order(exchange_packet_t &packet)
+{
+    packet.command_header.signature = htons(packet.command_header.signature);
+    packet.command_header.command = htons(packet.command_header.command);
+    packet.protocol_version = htonl(packet.protocol_version);
+    packet.initiator_token = htonl(packet.initiator_token);
+    packet.sender_ssrc = htonl(packet.sender_ssrc);
+}
+
+void to_host_order(exchange_packet_t &packet)
+{
+    to_network_order(packet);
+}
+
+
 class RTPMIDI {
 public:
-    rtpmidi_error accept(const exchange_packet_t &invitation, exchange_packet_t &response) const
+    RTPMIDI(UDPSocket *command_socket, uint32_t ssrc, std::string name)
+        : _command_socket{command_socket}, _ssrc{ssrc}, _name{name}
+    {
+    }
+
+    rtpmidi_error accept_response(const exchange_packet_t &invitation, exchange_packet_t &response) const
     {
         if(invitation.command_header.command != INV) {
             return RTPMIDI_ERROR_COMMAND;
@@ -119,6 +141,20 @@ public:
 
     }
 
+    rtpmidi_error participate()
+    {
+        SocketAddress address;
+        exchange_packet_t invitation;
+        _command_socket->recvfrom(&address, &invitation, sizeof(exchange_packet_t));
+        to_host_order(invitation);
+
+        exchange_packet_t response;
+        accept_response(invitation, response);
+        to_network_order(response);
+        _command_socket->sendto(address, &response, sizeof(exchange_packet_t));
+    }
+
+
     uint32_t ssrc() const
     {
         return _ssrc;
@@ -130,8 +166,10 @@ public:
     }
 
 private:
-    uint32_t _ssrc {};
-    std::string _name = "mbed-rtp-midi";
+    UDPSocket *_command_socket;
+
+    uint32_t _ssrc;
+    std::string _name;
 
 };
 
