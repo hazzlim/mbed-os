@@ -39,10 +39,11 @@ enum rtpmidi_command : uint32_t {
 };
 
 /* TODO: Find non-overlapping error range */
-enum rtpmidi_error : int32_t {
+enum rtpmidi_error_t : int32_t {
     RTPMIDI_ERROR_OK        = 0,
-    RTPMIDI_ERROR_COMMAND   = -9001,
-    RTPMIDI_ERROR_SYNC      = -9002
+    RTPMIDI_ERROR_CONNECT   = -9001,
+    RTPMIDI_ERROR_COMMAND   = -9002,
+    RTPMIDI_ERROR_SYNC      = -9003
 };
 
 /* Command Header */
@@ -93,98 +94,43 @@ void to_host_order(exchange_packet_t &packet)
     to_network_order(packet);
 }
 
-
 class RTPMIDI {
 public:
+    explicit RTPMIDI(NetworkInterface *net);
 
-    RTPMIDI(uint32_t ssrc, std::string name)
-        : _net{nullptr}, _command_socket{nullptr}, _ssrc{ssrc}, _name{name}
-    {
-    }
-
-    void bind_net(NetworkInterface *net)
-    {
-        _net = net;
-    }
-
-    void bind_socket(UDPSocket *socket)
-    {
-        _command_socket = socket;
-    }
-
-    rtpmidi_error accept_response(const exchange_packet_t &invitation, exchange_packet_t &response) const
-    {
-        if(invitation.command_header.command != INV) {
-            return RTPMIDI_ERROR_COMMAND;
-        }
-        set_command_header(response.command_header, ACCEPT_INV);
-        response.initiator_token = invitation.initiator_token;
-        response.sender_ssrc = _ssrc;
-        strcpy(response.name, _name.c_str());
-        return RTPMIDI_ERROR_OK;
-    }
-
-    rtpmidi_error synchronization_response(const synchronization_packet_t &initiator,
-                                           synchronization_packet_t &response,
-                                           uint64_t response_timestamp)
-    {
-        if(initiator.count != SYNC0) {
-            return RTPMIDI_ERROR_SYNC;
-        }
-        set_command_header(response.command_header, CK);
-        response.sender_ssrc = _ssrc;
-        response.count = SYNC1;
-        response.timestamp[SYNC0] = initiator.timestamp[SYNC0];
-        response.timestamp[SYNC1] = response_timestamp;
-        return RTPMIDI_ERROR_OK;
-    }
-
-    void set_command_header(command_header_t &header, rtpmidi_command command) const
-    {
-        header.command = command;
-    }
-
-    void generate_midi_header(midi_packet_header_t &header, uint16_t sequence_number, uint32_t timestamp)
-    {
-        header.sequence_number = sequence_number;
-        header.timestamp = timestamp;
-        header.sender_ssrc = _ssrc;
-
-    }
-
-    rtpmidi_error participate()
-    {
-        _net->connect();
-
-        SocketAddress address;
-        exchange_packet_t invitation;
-        _command_socket->recvfrom(&address, &invitation, sizeof(exchange_packet_t));
-        to_host_order(invitation);
-
-        exchange_packet_t response;
-        accept_response(invitation, response);
-        to_network_order(response);
-        _command_socket->sendto(address, &response, sizeof(exchange_packet_t));
-    }
-
-
-    uint32_t ssrc() const
-    {
-        return _ssrc;
-    }
-
-    std::string name() const
-    {
-        return _name;
-    }
-
+    rtpmidi_error_t connect();
 private:
     NetworkInterface *_net;
-    UDPSocket *_command_socket;
 
-    uint32_t _ssrc;
-    std::string _name;
-
+    bool connect_to_network();
 };
+
+RTPMIDI::RTPMIDI(NetworkInterface *net) : _net{net}
+{
+}
+
+rtpmidi_error_t RTPMIDI::connect()
+{
+    if(!connect_to_network()) {
+        return RTPMIDI_ERROR_CONNECT;
+    }
+
+    return RTPMIDI_ERROR_OK;
+}
+
+bool RTPMIDI::connect_to_network()
+{
+    if(!_net) {
+        return false;
+    }
+
+    auto error = _net->connect();
+
+    if(error != NSAPI_ERROR_OK) {
+        return false;
+    }
+
+    return true;
+}
 
 #endif // RTP_MIDI_H
