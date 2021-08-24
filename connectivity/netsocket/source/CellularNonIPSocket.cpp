@@ -221,6 +221,11 @@ void CellularNonIPSocket::sigio(Callback<void()> callback)
     _lock.unlock();
 }
 
+nsapi_error_t CellularNonIPSocket::open(NetworkStack *stack)
+{
+    return NSAPI_ERROR_UNSUPPORTED;
+}
+
 nsapi_error_t CellularNonIPSocket::connect(const SocketAddress &address)
 {
     return NSAPI_ERROR_UNSUPPORTED;

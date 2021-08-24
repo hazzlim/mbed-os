@@ -68,6 +68,13 @@ public:
     */
     nsapi_error_t open(mbed::ControlPlane_netif *cp_netif);
 
+    /** Not implemented for CellularNonIPSocket.
+    *
+    *  @param stack      Not used.
+    *  @return           NSAPI_ERROR_UNSUPPORTED
+    */
+    nsapi_error_t open(NetworkStack *stack) override;
+
     /** Closes socket
     *
     *  @return         NSAPI_ERROR_OK on success

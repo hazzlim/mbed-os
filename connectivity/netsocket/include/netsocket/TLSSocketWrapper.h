@@ -172,6 +172,7 @@ public:
     nsapi_size_or_error_t recv(void *data, nsapi_size_t size) override;
 
     /* = Functions inherited from Socket = */
+    nsapi_error_t open(NetworkStack *stack) override;
     nsapi_error_t close() override;
     /**
      *  Connect the transport socket and start handshake.

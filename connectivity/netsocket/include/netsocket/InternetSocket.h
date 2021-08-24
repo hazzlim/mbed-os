@@ -53,7 +53,7 @@ public:
      *  @retval         int negative error codes for stack-related failures.
      *                  See @ref NetworkStack::socket_open.
      */
-    nsapi_error_t open(NetworkStack *stack);
+    nsapi_error_t open(NetworkStack *stack) override;
 
 #if !defined(DOXYGEN_ONLY)
     template <typename S>

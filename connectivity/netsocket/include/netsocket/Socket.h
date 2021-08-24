@@ -45,6 +45,20 @@ public:
      */
     virtual ~Socket() = default;
 
+    /** Open a network socket on the network stack of the given
+     *  network interface.
+     *
+     *  @note Not needed if stack is passed to the socket's constructor.
+     *
+     *  @param stack    Network stack as target for socket.
+     *  @retval         NSAPI_ERROR_OK on success.
+     *  @retval         NSAPI_ERROR_PARAMETER in case the provided stack was invalid
+     *                  or a stack was already created and socket opened successfully.
+     *  @retval         int negative error codes for stack-related failures.
+     *                  See @ref NetworkStack::socket_open.
+     */
+    virtual nsapi_error_t open(NetworkStack *stack) = 0;
+
     /** Closes the socket.
      *
      *  Closes any open connection and deallocates any memory associated
