@@ -19,51 +19,7 @@
 
 #include "gmock/gmock.h"
 
-#define TEST_INITIATOR_TOKEN    0x327b23c6
-#define TEST_INITIATOR_SSRC     0xa556f4da
-#define TEST_INITIATOR_NAME     "HOST"
-#define TEST_SSRC               0xdbffa3a1
-#define TEST_NAME               "NAME"
-
-class UDPSocket_Stub : public UDPSocket {
-public:
-    nsapi_size_or_error_t recvfrom(SocketAddress *address,
-                                           void *data, nsapi_size_t size)
-    {
-        to_network_order(invitation);
-        memcpy(data, &invitation, size);
-        return NSAPI_ERROR_OK;
-    }
-
-    nsapi_size_or_error_t sendto(const SocketAddress &address,
-                                         const void *data, nsapi_size_t size)
-    {
-        to_network_order(expected_response);
-
-        memcpy(&actual_response, data, size);
-        return NSAPI_ERROR_OK;
-    }
-
-    exchange_packet_t actual_response;
-    exchange_packet_t invitation = {
-        SIGNATURE,
-        INV,
-        PROTOCOL_VERSION,
-        TEST_INITIATOR_TOKEN,
-        TEST_INITIATOR_SSRC,
-        TEST_INITIATOR_NAME
-    };
-
-    exchange_packet_t expected_response = {
-        SIGNATURE,
-        ACCEPT_INV,
-        PROTOCOL_VERSION,
-        TEST_INITIATOR_TOKEN,
-        TEST_SSRC,
-        TEST_NAME
-    };
-
-};
+using ::testing::Eq;
 
 MATCHER_P(Equals, expected, "")
 {
@@ -75,38 +31,115 @@ MATCHER_P(Equals, expected, "")
            (0 == strcmp(arg.name, expected.name));
 }
 
+#define TEST_INITIATOR_TOKEN    0x327b23c6
+#define TEST_INITIATOR_SSRC     0xa556f4da
+#define TEST_INITIATOR_NAME     "HOST"
+#define TEST_SSRC               0xdbffa3a1
+#define TEST_NAME               "NAME"
+
+const exchange_packet_t invitation_packet = {
+    SIGNATURE,
+    INV,
+    PROTOCOL_VERSION,
+    TEST_INITIATOR_TOKEN,
+    TEST_INITIATOR_SSRC,
+    TEST_INITIATOR_NAME
+};
+const exchange_packet_t expected_response_packet = {
+    SIGNATURE,
+    ACCEPT_INV,
+    PROTOCOL_VERSION,
+    TEST_INITIATOR_TOKEN,
+    TEST_SSRC,
+    TEST_NAME
+};
+
+class NetworkInterface_Stub : public NetworkInterface {
+public:
+    bool is_connected {false};
+
+    nsapi_error_t connect() override
+    {
+        is_connected = true;
+        return NSAPI_ERROR_OK;
+    }
+
+    nsapi_error_t disconnect() override
+    {
+        return NSAPI_ERROR_OK;
+    }
+
+    NetworkStack* get_stack() override
+    {
+        return nullptr;
+    }
+};
+
+class UDPSocket_Stub : public UDPSocket {
+public:
+    exchange_packet_t invitation_to_return;
+    exchange_packet_t expected_response;
+    exchange_packet_t response_one;
+    exchange_packet_t response_two;
+
+    size_t send_count {};
+
+    void set_return(const exchange_packet_t &ret)
+    {
+        invitation_to_return = ret;
+        to_network_order(invitation_to_return);
+    }
+
+    void expect_response(const exchange_packet_t &exp)
+    {
+        expected_response = exp;
+        to_network_order(expected_response);
+    }
+
+    nsapi_size_or_error_t recvfrom(SocketAddress *address,
+                                           void *data, nsapi_size_t size)
+    {
+        memcpy(data, &invitation_to_return, size);
+        return NSAPI_ERROR_OK;
+    }
+
+    nsapi_size_or_error_t sendto(const SocketAddress &address,
+                                         const void *data, nsapi_size_t size)
+    {
+        ++send_count;
+        exchange_packet_t *response = (send_count == 1) ? &response_one : &response_two;
+
+        memcpy(response, data, size);
+        return NSAPI_ERROR_OK;
+    }
+};
+
 class TestRTPMIDI : public testing::Test {
     public:
-        UDPSocket_Stub socket_stub;
-        RTPMIDI rtpmidi{&socket_stub, TEST_SSRC, TEST_NAME};
+        RTPMIDI rtpmidi{TEST_SSRC, TEST_NAME};
 
-        exchange_packet_t invitation_packet;
-        exchange_packet_t response_packet;
+        exchange_packet_t response;
+        exchange_packet_t invitation = invitation_packet;
+        exchange_packet_t expected_response = expected_response_packet;
 };
+
+
 
 TEST_F(TestRTPMIDI, GeneratesAcceptInvitationPacket)
 {
-    // Invitation Command
-    invitation_packet.command_header.command = INV;
-    auto error = rtpmidi.accept_response(invitation_packet, response_packet);
+    auto error = rtpmidi.accept_response(invitation, response);
 
-    ASSERT_EQ(error, RTPMIDI_ERROR_OK);
-    ASSERT_EQ(response_packet.command_header.signature, SIGNATURE);
-    ASSERT_EQ(response_packet.command_header.command, ACCEPT_INV);
-    ASSERT_EQ(response_packet.protocol_version, PROTOCOL_VERSION);
-    ASSERT_EQ(response_packet.initiator_token, invitation_packet.initiator_token);
-    ASSERT_EQ(response_packet.sender_ssrc, rtpmidi.ssrc());
-    ASSERT_EQ(response_packet.name, rtpmidi.name());
-
+    ASSERT_THAT(error, Eq(RTPMIDI_ERROR_OK));
+    ASSERT_THAT(response, Equals(expected_response));
 }
 
 TEST_F(TestRTPMIDI, ErrorOnInvalidInvitationPacket)
 {
     // Invalid Command
-    invitation_packet.command_header.command = 0;
-    auto error = rtpmidi.accept_response(invitation_packet, response_packet);
+    invitation.command_header.command = 0;
+    auto error = rtpmidi.accept_response(invitation, response);
 
-    ASSERT_EQ(error, RTPMIDI_ERROR_COMMAND);
+    ASSERT_THAT(error, Eq(RTPMIDI_ERROR_COMMAND));
 }
 
 TEST_F(TestRTPMIDI, GeneratesResponseToSynchronizationPacket)
@@ -160,9 +193,21 @@ TEST_F(TestRTPMIDI, GeneratesMIDIPacketHeader)
     ASSERT_EQ(header.sender_ssrc, rtpmidi.ssrc());
 }
 
-TEST_F(TestRTPMIDI, SendsCorrectResponseToInvitation)
+TEST_F(TestRTPMIDI, CorrectlyEstablishesSession)
 {
+    NetworkInterface_Stub net_stub;
+    UDPSocket_Stub socket_stub;
+    socket_stub.set_return(invitation_packet);
+    socket_stub.expect_response(expected_response_packet);
+
+    rtpmidi.bind_net(&net_stub);
+    rtpmidi.bind_socket(&socket_stub);
     rtpmidi.participate();
 
-    ASSERT_THAT(socket_stub.actual_response, Equals(socket_stub.expected_response));
+    ASSERT_THAT(net_stub.is_connected, Eq(true));
+    //ASSERT_THAT(socket_stub.is_open, Eq(true));
+
+    //ASSERT_THAT(socket_stub.send_count, Eq(2));
+    ASSERT_THAT(socket_stub.response_one, Equals(socket_stub.expected_response));
+    //ASSERT_THAT(socket_stub.response_two, Equals(socket_stub.expected_response));
 }

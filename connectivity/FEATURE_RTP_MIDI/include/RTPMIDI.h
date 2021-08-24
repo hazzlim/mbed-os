@@ -96,9 +96,20 @@ void to_host_order(exchange_packet_t &packet)
 
 class RTPMIDI {
 public:
-    RTPMIDI(UDPSocket *command_socket, uint32_t ssrc, std::string name)
-        : _command_socket{command_socket}, _ssrc{ssrc}, _name{name}
+
+    RTPMIDI(uint32_t ssrc, std::string name)
+        : _net{nullptr}, _command_socket{nullptr}, _ssrc{ssrc}, _name{name}
     {
+    }
+
+    void bind_net(NetworkInterface *net)
+    {
+        _net = net;
+    }
+
+    void bind_socket(UDPSocket *socket)
+    {
+        _command_socket = socket;
     }
 
     rtpmidi_error accept_response(const exchange_packet_t &invitation, exchange_packet_t &response) const
@@ -143,6 +154,8 @@ public:
 
     rtpmidi_error participate()
     {
+        _net->connect();
+
         SocketAddress address;
         exchange_packet_t invitation;
         _command_socket->recvfrom(&address, &invitation, sizeof(exchange_packet_t));
@@ -166,6 +179,7 @@ public:
     }
 
 private:
+    NetworkInterface *_net;
     UDPSocket *_command_socket;
 
     uint32_t _ssrc;
