@@ -114,6 +114,12 @@ public:
     }
 };
 
+class UDPSocket_Mock : public UDPSocket {
+public:
+    MOCK_METHOD(nsapi_size_or_error_t, recvfrom, (SocketAddress*, const void*, nsapi_size_t), (override));
+    MOCK_METHOD(nsapi_size_or_error_t, sendto, (const SocketAddress&, const void*, nsapi_size_t), (override));
+};
+
 class TestRTPMIDI : public testing::Test {
     public:
         RTPMIDI rtpmidi{TEST_SSRC, TEST_NAME};
@@ -195,19 +201,8 @@ TEST_F(TestRTPMIDI, GeneratesMIDIPacketHeader)
 
 TEST_F(TestRTPMIDI, CorrectlyEstablishesSession)
 {
-    NetworkInterface_Stub net_stub;
-    UDPSocket_Stub socket_stub;
-    socket_stub.set_return(invitation_packet);
-    socket_stub.expect_response(expected_response_packet);
+    UDPSocket_Mock socket_mock;
 
-    rtpmidi.bind_net(&net_stub);
-    rtpmidi.bind_socket(&socket_stub);
+    rtpmidi.bind_socket(&socket_mock);
     rtpmidi.participate();
-
-    ASSERT_THAT(net_stub.is_connected, Eq(true));
-    //ASSERT_THAT(socket_stub.is_open, Eq(true));
-
-    //ASSERT_THAT(socket_stub.send_count, Eq(2));
-    ASSERT_THAT(socket_stub.response_one, Equals(socket_stub.expected_response));
-    //ASSERT_THAT(socket_stub.response_two, Equals(socket_stub.expected_response));
 }
