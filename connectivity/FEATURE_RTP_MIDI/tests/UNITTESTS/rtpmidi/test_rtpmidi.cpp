@@ -65,39 +65,41 @@ public:
 class UDPSocketMock : public UDPSocket {
 };
 
-TEST(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
-{
+class TestRTPMIDI : public testing::Test {
+public:
     NetworkInterfaceMock net_mock;
+    RTPMIDI rtpmidi{&net_mock};
+};
+
+TEST_F(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
+{
     EXPECT_CALL(net_mock, connect());
 
-    RTPMIDI rtpmidi{&net_mock};
     auto error = rtpmidi.connect();
 
     EXPECT_THAT(error, Eq(RTPMIDI_ERROR_OK));
 }
 
-TEST(TestRTPMIDI, ErrorIfNetworkInterfaceUnavailable)
+TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceUnavailable)
 {
-    RTPMIDI rtpmidi{nullptr};
-    auto error = rtpmidi.connect();
+    RTPMIDI rtpmidi_with_null_interface{nullptr};
+
+    auto error = rtpmidi_with_null_interface.connect();
 
     EXPECT_THAT(error, RTPMIDI_ERROR_CONNECT);
 }
 
-TEST(TestRTPMIDI, ErrorIfNetworkInterfaceReturnsError)
+TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceReturnsError)
 {
-    NetworkInterfaceMock net_mock;
     EXPECT_CALL(net_mock, connect())
         .WillOnce(Return(NSAPI_ERROR_CONNECTION_TIMEOUT));
 
-    RTPMIDI rtpmidi{&net_mock};
     auto error = rtpmidi.connect();
 
     EXPECT_THAT(error, Eq(RTPMIDI_ERROR_CONNECT));
 }
 
-TEST(TestRTPMIDI, RespondsToSessionInvitation)
+TEST_F(TestRTPMIDI, RespondsToSessionInvitation)
 {
-    NetworkInterfaceMock net_mock;
-    UDPSocketMock socket_mock;
+    // Use bind functions instead of constructor?
 }
