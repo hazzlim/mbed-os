@@ -21,6 +21,10 @@
 
 using testing::Eq;
 using testing::Return;
+using testing::_;
+using testing::NotNull;
+using testing::DoAll;
+using testing::SetArgPointee;
 
 #define TEST_INITIATOR_TOKEN    0x327b23c6
 #define TEST_INITIATOR_SSRC     0xa556f4da
@@ -62,13 +66,24 @@ public:
     MOCK_METHOD(NetworkStack*, get_stack, (), (override));
 };
 
+
+/* Action to set recvfrom data parameter */
+ACTION_P(SetArg1ToValue, value) { *reinterpret_cast<exchange_packet_t *>(arg1) = value; }
+
 class UDPSocketMock : public UDPSocket {
+public:
+    MOCK_METHOD(nsapi_error_t, open, (NetworkStack*), (override));
+    MOCK_METHOD(nsapi_size_or_error_t, recvfrom, (SocketAddress*, void*, nsapi_size_t), (override));
+    MOCK_METHOD(nsapi_size_or_error_t, sendto, (const SocketAddress&, const void*, nsapi_size_t), (override));
 };
 
 class TestRTPMIDI : public testing::Test {
 public:
     NetworkInterfaceMock net_mock;
-    RTPMIDI rtpmidi{&net_mock};
+    UDPSocketMock socket_mock;
+    RTPMIDI rtpmidi{&net_mock, &socket_mock};
+
+    exchange_packet_t invitation {invitation_packet};
 };
 
 TEST_F(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
@@ -82,7 +97,7 @@ TEST_F(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
 
 TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceUnavailable)
 {
-    RTPMIDI rtpmidi_with_null_interface{nullptr};
+    RTPMIDI rtpmidi_with_null_interface{nullptr, &socket_mock};
 
     auto error = rtpmidi_with_null_interface.connect();
 
@@ -99,7 +114,19 @@ TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceReturnsError)
     EXPECT_THAT(error, Eq(RTPMIDI_ERROR_CONNECT));
 }
 
+
 TEST_F(TestRTPMIDI, RespondsToSessionInvitation)
 {
-    // Use bind functions instead of constructor?
+    EXPECT_CALL(net_mock, connect())
+        .WillOnce(Return(NSAPI_ERROR_OK));
+
+    EXPECT_CALL(socket_mock, open(_));
+    EXPECT_CALL(socket_mock, recvfrom(NotNull(), NotNull(), sizeof(exchange_packet_t)))
+        .WillOnce(DoAll(SetArg1ToValue(invitation), Return(NSAPI_ERROR_OK)));
+
+    // Mock SocketAddress so that we can check sent back to initiator, and on
+    // correct port
+    EXPECT_CALL(socket_mock, sendto(_, NotNull(), sizeof(exchange_packet_t)));
+
+    rtpmidi.connect();
 }

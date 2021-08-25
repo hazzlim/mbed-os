@@ -96,16 +96,17 @@ void to_host_order(exchange_packet_t &packet)
 
 class RTPMIDI {
 public:
-    explicit RTPMIDI(NetworkInterface *net);
+    RTPMIDI(NetworkInterface *net, UDPSocket *socket);
 
     rtpmidi_error_t connect();
 private:
     NetworkInterface *_net;
+    UDPSocket *_socket;
 
     bool connect_to_network();
 };
 
-RTPMIDI::RTPMIDI(NetworkInterface *net) : _net{net}
+RTPMIDI::RTPMIDI(NetworkInterface *net, UDPSocket *socket) : _net{net}, _socket{socket}
 {
 }
 
@@ -114,6 +115,12 @@ rtpmidi_error_t RTPMIDI::connect()
     if(!connect_to_network()) {
         return RTPMIDI_ERROR_CONNECT;
     }
+
+    _socket->open(_net);
+
+    SocketAddress address;
+    exchange_packet_t invitation_packet;
+    _socket->recvfrom(&address, &invitation_packet, sizeof(invitation_packet));
 
     return RTPMIDI_ERROR_OK;
 }
@@ -125,7 +132,6 @@ bool RTPMIDI::connect_to_network()
     }
 
     auto error = _net->connect();
-
     if(error != NSAPI_ERROR_OK) {
         return false;
     }
