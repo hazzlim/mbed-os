@@ -72,7 +72,7 @@ ACTION_P(SetArg1ToValue, value) { *reinterpret_cast<exchange_packet_t *>(arg1) =
 
 class UDPSocketMock : public UDPSocket {
 public:
-    MOCK_METHOD(nsapi_error_t, open, (NetworkStack*), (override));
+    MOCK_METHOD(nsapi_error_t, open, (NetworkInterface*), (override));
     MOCK_METHOD(nsapi_size_or_error_t, recvfrom, (SocketAddress*, void*, nsapi_size_t), (override));
     MOCK_METHOD(nsapi_size_or_error_t, sendto, (const SocketAddress&, const void*, nsapi_size_t), (override));
 };
