@@ -25,6 +25,8 @@ using testing::_;
 using testing::NotNull;
 using testing::DoAll;
 using testing::SetArgPointee;
+using testing::SaveArg;
+using testing::InSequence;
 
 #define TEST_INITIATOR_TOKEN    0x327b23c6
 #define TEST_INITIATOR_SSRC     0xa556f4da
@@ -40,6 +42,7 @@ const exchange_packet_t invitation_packet = {
     TEST_INITIATOR_SSRC,
     TEST_INITIATOR_NAME
 };
+
 const exchange_packet_t expected_response_packet = {
     SIGNATURE,
     ACCEPT_INV,
@@ -66,16 +69,24 @@ public:
     MOCK_METHOD(NetworkStack*, get_stack, (), (override));
 };
 
-
-/* Action to set recvfrom data parameter */
-ACTION_P(SetArg1ToValue, value) { *reinterpret_cast<exchange_packet_t *>(arg1) = value; }
-
 class UDPSocketMock : public UDPSocket {
 public:
     MOCK_METHOD(nsapi_error_t, open, (NetworkStack*), (override));
     MOCK_METHOD(nsapi_size_or_error_t, recvfrom, (SocketAddress*, void*, nsapi_size_t), (override));
     MOCK_METHOD(nsapi_size_or_error_t, sendto, (const SocketAddress&, const void*, nsapi_size_t), (override));
 };
+
+/* Action to set recvfrom data parameter */
+ACTION_P(SetArg1ToValue, value)
+{
+    *reinterpret_cast<exchange_packet_t *>(arg1) = value;
+}
+
+/* Action to save sendto data to pointer */
+ACTION_P(SaveArg1Value, pointer)
+{
+    *pointer = *(reinterpret_cast<const exchange_packet_t *>(arg1));
+}
 
 class TestRTPMIDI : public testing::Test {
 public:
@@ -84,6 +95,21 @@ public:
     RTPMIDI rtpmidi{&net_mock, &socket_mock};
 
     exchange_packet_t invitation {invitation_packet};
+    exchange_packet_t expected_response {expected_response_packet};
+
+    void SetUp() override
+    {
+        // Network Byte Ordering
+        invitation.command_header.command = htons(invitation.command_header.command);
+        invitation.protocol_version = htonl(invitation.protocol_version);
+        invitation.initiator_token = htonl(invitation.initiator_token);
+        invitation.sender_ssrc = htonl(invitation.sender_ssrc);
+
+        expected_response.command_header.command = ntohs(expected_response.command_header.command);
+        expected_response.protocol_version = ntohl(expected_response.protocol_version);
+        expected_response.initiator_token = ntohl(expected_response.initiator_token);
+        expected_response.sender_ssrc = ntohl(expected_response.sender_ssrc);
+    }
 };
 
 TEST_F(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
@@ -92,7 +118,7 @@ TEST_F(TestRTPMIDI, ConnectsNetworkInterfaceToReceiveSessionInvitation)
 
     auto error = rtpmidi.connect();
 
-    EXPECT_THAT(error, Eq(RTPMIDI_ERROR_OK));
+    ASSERT_THAT(error, Eq(RTPMIDI_ERROR_OK));
 }
 
 TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceUnavailable)
@@ -101,7 +127,7 @@ TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceUnavailable)
 
     auto error = rtpmidi_with_null_interface.connect();
 
-    EXPECT_THAT(error, RTPMIDI_ERROR_CONNECT);
+    ASSERT_THAT(error, RTPMIDI_ERROR_CONNECT);
 }
 
 TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceReturnsError)
@@ -111,22 +137,25 @@ TEST_F(TestRTPMIDI, ErrorIfNetworkInterfaceReturnsError)
 
     auto error = rtpmidi.connect();
 
-    EXPECT_THAT(error, Eq(RTPMIDI_ERROR_CONNECT));
+    ASSERT_THAT(error, Eq(RTPMIDI_ERROR_CONNECT));
 }
 
 
 TEST_F(TestRTPMIDI, RespondsToSessionInvitation)
 {
+    exchange_packet_t actual_response;
+
     EXPECT_CALL(net_mock, connect())
         .WillOnce(Return(NSAPI_ERROR_OK));
-
     EXPECT_CALL(socket_mock, open(_));
-    EXPECT_CALL(socket_mock, recvfrom(NotNull(), NotNull(), sizeof(exchange_packet_t)))
-        .WillOnce(DoAll(SetArg1ToValue(invitation), Return(NSAPI_ERROR_OK)));
 
-    // Mock SocketAddress so that we can check sent back to initiator, and on
-    // correct port
-    //EXPECT_CALL(socket_mock, sendto(_, NotNull(), sizeof(exchange_packet_t)));
+    EXPECT_CALL(socket_mock, recvfrom(NotNull(), NotNull(), sizeof(exchange_packet_t)))
+        .Times(2).WillRepeatedly(DoAll(SetArg1ToValue(invitation), Return(NSAPI_ERROR_OK)));
+
+    EXPECT_CALL(socket_mock, sendto(_, NotNull(), sizeof(exchange_packet_t)))
+        .Times(2).WillRepeatedly(DoAll(SaveArg1Value(&actual_response), Return(NSAPI_ERROR_OK)));
 
     rtpmidi.connect();
+
+    ASSERT_THAT(actual_response, Equals(expected_response));
 }
