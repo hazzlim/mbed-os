@@ -12,6 +12,7 @@ target_include_directories(mbed-rtp-midi
 
 target_sources(mbed-rtp-midi
     INTERFACE
+        source/RTPMIDI.cpp
 )
 
 target_link_libraries(mbed-rtp-midi
