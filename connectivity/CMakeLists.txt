@@ -23,6 +23,7 @@ add_library(mbed-netsocket INTERFACE)
 add_library(mbed-nfc INTERFACE)
 add_library(mbed-ppp INTERFACE)
 add_library(mbed-wifi INTERFACE)
+add_library(mbed-rtp-midi)
 
 if(${CMAKE_CROSSCOMPILING})
     # The directories below contain optional target libraries
