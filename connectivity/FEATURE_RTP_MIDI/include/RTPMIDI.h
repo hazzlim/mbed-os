@@ -81,21 +81,6 @@ typedef struct {
     uint32_t sender_ssrc;
 } midi_packet_header_t;
 
-/* Byte Swapping Functions */
-void to_network_order(exchange_packet_t &packet)
-{
-    packet.command_header.signature = htons(packet.command_header.signature);
-    packet.command_header.command = htons(packet.command_header.command);
-    packet.protocol_version = htonl(packet.protocol_version);
-    packet.initiator_token = htonl(packet.initiator_token);
-    packet.sender_ssrc = htonl(packet.sender_ssrc);
-}
-
-void to_host_order(exchange_packet_t &packet)
-{
-    to_network_order(packet);
-}
-
 class RTPMIDI {
 public:
     RTPMIDI(NetworkInterface *net, UDPSocket *socket);

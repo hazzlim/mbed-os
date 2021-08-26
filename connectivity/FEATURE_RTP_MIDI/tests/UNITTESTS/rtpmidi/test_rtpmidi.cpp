@@ -52,6 +52,16 @@ const exchange_packet_t expected_response_packet = {
     TEST_NAME
 };
 
+/* Byte Swapping Function */
+void swap_bytes(exchange_packet_t &packet)
+{
+    packet.command_header.signature = htons(packet.command_header.signature);
+    packet.command_header.command = htons(packet.command_header.command);
+    packet.protocol_version = htonl(packet.protocol_version);
+    packet.initiator_token = htonl(packet.initiator_token);
+    packet.sender_ssrc = htonl(packet.sender_ssrc);
+}
+
 MATCHER_P(Equals, expected, "")
 {
     return arg.command_header.signature == expected.command_header.signature &&
@@ -100,15 +110,8 @@ public:
     void SetUp() override
     {
         // Network Byte Ordering
-        invitation.command_header.command = htons(invitation.command_header.command);
-        invitation.protocol_version = htonl(invitation.protocol_version);
-        invitation.initiator_token = htonl(invitation.initiator_token);
-        invitation.sender_ssrc = htonl(invitation.sender_ssrc);
-
-        expected_response.command_header.command = ntohs(expected_response.command_header.command);
-        expected_response.protocol_version = ntohl(expected_response.protocol_version);
-        expected_response.initiator_token = ntohl(expected_response.initiator_token);
-        expected_response.sender_ssrc = ntohl(expected_response.sender_ssrc);
+        swap_bytes(invitation);
+        swap_bytes(response);
     }
 };
 
