@@ -16,6 +16,7 @@
  */
 
 #include "RTPMIDI.h"
+#include <cstdio>
 
 RTPMIDI::RTPMIDI(NetworkInterface *net, UDPSocket *socket) : _net{net}, _socket{socket}
 {
@@ -37,6 +38,7 @@ bool RTPMIDI::exchange_handshake()
     SocketAddress address;
     exchange_packet_t invitation_packet;
 
+    printf("Waiting to connect");
     _socket->recvfrom(&address, &invitation_packet, sizeof(invitation_packet));
 
     exchange_packet_t response_packet = {
