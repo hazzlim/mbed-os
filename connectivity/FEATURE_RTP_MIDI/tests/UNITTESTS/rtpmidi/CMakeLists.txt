@@ -25,6 +25,7 @@ target_link_libraries(${TEST_NAME}
         mbed-stubs-netsocket
         mbed-stubs-events
         mbed-stubs-platform
+        mbed-stubs-rtos
         mbed-rtp-midi
         gmock_main
 )
