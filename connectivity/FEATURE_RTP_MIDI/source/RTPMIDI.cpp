@@ -52,19 +52,10 @@ rtpmidi_error_t RTPMIDI::connect_and_sync(uint16_t control_port)
 {
     auto error = connect(control_port);
     if (error == RTPMIDI_ERROR_OK) {
-
-        for (size_t i = 0; i < INITIAL_SYNC_COUNT; ++i) {
-            synchronise();
-        }
-
-        /* Configure timeout */
-        _sockets[MIDI_SOCKET]->set_timeout(SOCKET_TIMEOUT);
-
-        events::Event<void()> sync_event = _rtp_queue.event(this, &RTPMIDI::synchronise);
-        sync_event.period(SYNC_FREQUENCY);
-        sync_event.post();
+        /* Configure Synchronisation Callback */
         _rtp_thread.start(callback(&_rtp_queue, &events::EventQueue::dispatch_forever));
-
+        _sockets[MIDI_SOCKET]->set_blocking(false);
+        _sockets[MIDI_SOCKET]->sigio(_rtp_queue.event(this, &RTPMIDI::midi_port_handler));
     }
 
     return error;
@@ -163,6 +154,29 @@ void RTPMIDI::synchronise()
     _sockets[MIDI_SOCKET]->recvfrom(&sockAddr, &sync_2, sizeof(synchronization_packet_t));
 
     /* Calculate time drift */
+}
+
+void RTPMIDI::midi_port_handler()
+{
+    while (true) {
+        SocketAddress sockAddr;
+        synchronization_packet_t sync_packet;
+        auto error = _sockets[MIDI_SOCKET]->recvfrom(&sockAddr, &sync_packet, sizeof(synchronization_packet_t));
+        if (error == NSAPI_ERROR_WOULD_BLOCK) {
+            // come back on next sigio
+            break;
+        } else if (error < 0) {
+            // error handling
+            return;
+        }
+
+        if (sync_packet.count == SYNC0) {
+            sync_packet.sender_ssrc = htonl(_ssrc);
+            sync_packet.count = SYNC1;
+            sync_packet.timestamp[SYNC1] = htonll(get_current_timestamp());
+            _sockets[MIDI_SOCKET]->sendto(sockAddr, &sync_packet, sizeof(synchronization_packet_t));
+        }
+    }
 }
 
 uint64_t RTPMIDI::get_current_timestamp()

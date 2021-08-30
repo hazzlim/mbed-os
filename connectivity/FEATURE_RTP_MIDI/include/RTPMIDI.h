@@ -146,6 +146,7 @@ private:
     size_t midi_buffer_size = 0;
     uint16_t sequence_number = 0;
 
+    void midi_port_handler();
     bool connect_to_network();
     void exchange_handshake(uint16_t port, size_t SOCKET);
     exchange_packet_t exchange_response(const exchange_packet_t &invitation);
