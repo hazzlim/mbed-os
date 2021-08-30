@@ -63,12 +63,10 @@ rtpmidi_error_t RTPMIDI::connect_and_sync(uint16_t control_port)
 
 rtpmidi_error_t RTPMIDI::connect(uint16_t control_port)
 {
-    printf("Try to connect\n");
     if(!connect_to_network()) {
         return RTPMIDI_ERROR_CONNECT;
     }
 
-    printf("Start handshake\n");
     exchange_handshake(control_port, CONTROL_SOCKET);
     exchange_handshake(control_port + 1, MIDI_SOCKET);
 
@@ -90,9 +88,6 @@ void RTPMIDI::exchange_handshake(uint16_t port, size_t SOCKET)
 
     response_packet = exchange_response(invitation_packet);
 
-/* DEBUG */
-    printf("Send response\n");
-/* DEBUG */
     _sockets[SOCKET]->sendto(_peer_address, &response_packet, sizeof(exchange_packet_t));
 }
 
