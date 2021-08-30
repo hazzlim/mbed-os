@@ -17,6 +17,9 @@ target_sources(mbed-rtp-midi
 
 target_link_libraries(mbed-rtp-midi
     INTERFACE
+        mbed-netsocket
+        mbed-core
+        mbed-events
 )
 
 
