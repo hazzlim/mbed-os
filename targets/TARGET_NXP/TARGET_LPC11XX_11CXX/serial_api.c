@@ -45,7 +45,7 @@ static const PinMap PinMap_UART_RX[] = {
     {NC   , NC    , 0x00}
 };
 
-static uint32_t serial_irq_ids[UART_NUM] = {0};
+static uintptr_t serial_irq_contexts[UART_NUM] = {0};
 static uart_irq_handler irq_handler;
 
 int stdio_uart_inited = 0;
@@ -103,7 +103,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx) {
 }
 
 void serial_free(serial_t *obj) {
-    serial_irq_ids[obj->index] = 0;
+    serial_irq_contexts[obj->index] = 0;
 }
 
 // serial_baud
@@ -223,15 +223,15 @@ static inline void uart_irq(uint32_t iir, uint32_t index) {
         default: return;
     }
     
-    if (serial_irq_ids[index] != 0)
-        irq_handler(serial_irq_ids[index], irq_type);
+    if (serial_irq_contexts[index] != 0)
+        irq_handler(serial_irq_contexts[index], irq_type);
 }
 
 void uart0_irq() {uart_irq((LPC_UART->IIR >> 1) & 0x7, 0);}
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id) {
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context) {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable) {

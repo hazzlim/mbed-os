@@ -137,10 +137,10 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
     }
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     struct serial_s *ser = cy_serial_get_struct(obj);
-    ser->handler_arg = id;
+    ser->handler_arg = context;
     // The struct uses a different type because objects.h cannot include serial_api.h without creating a cycle
     ser->handler = (void *)handler;
 }

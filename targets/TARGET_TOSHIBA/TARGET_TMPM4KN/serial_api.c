@@ -37,7 +37,7 @@
 
 serial_t stdio_uart;
 int stdio_uart_inited = 0;
-static int serial_irq_ids[UART_NUM] = {0};
+static uintptr_t serial_irq_contexts[UART_NUM] = {0};
 static void uart_swreset(TSB_UART_TypeDef *UARTx);
 static uart_irq_handler irq_handler;
 void invoke_serial_irq_handler(UARTName uart_name, SerialIrq event);
@@ -178,16 +178,16 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
 }
 
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 
 void invoke_serial_irq_handler(UARTName uart_name, SerialIrq event)
 {
-    irq_handler(serial_irq_ids[uart_name], event);
+    irq_handler(serial_irq_contexts[uart_name], event);
 }
 
 

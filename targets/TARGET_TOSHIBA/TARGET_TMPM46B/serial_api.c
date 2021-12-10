@@ -60,7 +60,7 @@ static const PinMap PinMap_UART_RTS[] = {
 };
 
 
-static uint32_t serial_irq_ids[UART_NUM] = {0};
+static uintptr_t serial_irq_contexts[UART_NUM] = {0};
 static uart_irq_handler irq_handler;
 void serial_init_UART_configure(int uartname, serial_t *obj, PinName tx, PinName rx);
 
@@ -261,42 +261,42 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
 
 void INTTX0_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_0], TxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_0], TxIrq);
 }
 
 void INTRX0_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_0], RxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_0], RxIrq);
 }
 
 void INTTX1_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_1], TxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_1], TxIrq);
 }
 
 void INTRX1_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_1], RxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_1], RxIrq);
 }
 
 void INTTX2_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_2], TxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_2], TxIrq);
 }
 
 void INTRX2_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_2], RxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_2], RxIrq);
 }
 
 void INTTX3_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_3], TxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_3], TxIrq);
 }
 
 void INTRX3_IRQHandler(void)
 {
-    irq_handler(serial_irq_ids[SERIAL_3], RxIrq);
+    irq_handler(serial_irq_contexts[SERIAL_3], RxIrq);
 }
 
 void INTUART0_IRQHandler(void)
@@ -304,10 +304,10 @@ void INTUART0_IRQHandler(void)
     FUART_INTStatus fuart_int;
     fuart_int = FUART_GetMaskedINTStatus(FUART0);
     if (fuart_int.Bit.TxFIFO == 1) {
-        irq_handler(serial_irq_ids[SERIAL_4], TxIrq);
+        irq_handler(serial_irq_contexts[SERIAL_4], TxIrq);
     }
     if (fuart_int.Bit.RxFIFO == 1) {
-        irq_handler(serial_irq_ids[SERIAL_4], RxIrq);
+        irq_handler(serial_irq_contexts[SERIAL_4], RxIrq);
     }
 }
 
@@ -316,17 +316,17 @@ void INTUART1_IRQHandler(void)
     FUART_INTStatus fuart_int;
     fuart_int = FUART_GetMaskedINTStatus(FUART1);
     if (fuart_int.Bit.TxFIFO == 1) {
-        irq_handler(serial_irq_ids[SERIAL_5], TxIrq);
+        irq_handler(serial_irq_contexts[SERIAL_5], TxIrq);
     }
     if (fuart_int.Bit.RxFIFO == 1) {
-        irq_handler(serial_irq_ids[SERIAL_5], RxIrq);
+        irq_handler(serial_irq_contexts[SERIAL_5], RxIrq);
     }
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

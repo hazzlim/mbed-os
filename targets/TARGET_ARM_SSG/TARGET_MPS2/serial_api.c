@@ -54,7 +54,7 @@ int stdio_uart_inited = 0;
 serial_t stdio_uart;
 
 struct serial_global_data_s {
-    uint32_t serial_irq_id;
+    uintptr_t serial_irq_context;
     gpio_t sw_rts, sw_cts;
     uint8_t count, rx_irq_set_flow, rx_irq_set_api;
 };
@@ -168,7 +168,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx) {
 }
 
 void serial_free(serial_t *obj) {
-      uart_data[obj->index].serial_irq_id = 0;
+      uart_data[obj->index].serial_irq_context = 0;
 }
 
 // serial_baud
@@ -235,11 +235,11 @@ static inline void uart_irq(uint32_t intstatus, uint32_t index, CMSDK_UART_TypeD
         }
     }
 
-    if (uart_data[index].serial_irq_id != 0)
+    if (uart_data[index].serial_irq_context != 0)
     {
         if ((irq_type != RxIrq) || (uart_data[index].rx_irq_set_api))
         {
-            irq_handler(uart_data[index].serial_irq_id, irq_type);
+            irq_handler(uart_data[index].serial_irq_context, irq_type);
         }
     }
 
@@ -260,9 +260,9 @@ void uart1_irq() {uart_irq(CMSDK_UART1->INTSTATUS & 0x3, 1, (CMSDK_UART_TypeDef*
 void uart2_irq() {uart_irq(CMSDK_UART3->INTSTATUS & 0x3, 2, (CMSDK_UART_TypeDef*)CMSDK_UART3);}
 void uart3_irq() {uart_irq(CMSDK_UART4->INTSTATUS & 0x3, 3, (CMSDK_UART_TypeDef*)CMSDK_UART4);}
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id) {
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context) {
     irq_handler = handler;
-    uart_data[obj->index].serial_irq_id = id;
+    uart_data[obj->index].serial_irq_context = context;
 }
 
 static void serial_irq_set_internal(serial_t *obj, SerialIrq irq, uint32_t enable) {

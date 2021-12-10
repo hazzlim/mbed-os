@@ -70,9 +70,8 @@
 
 #define MODULES_SIZE_SERIAL (UART_COUNT + USART_COUNT + LEUART_COUNT)
 
-/* Store IRQ id for each UART */
-static uint32_t serial_irq_ids[MODULES_SIZE_SERIAL] = { 0 };
-/* Interrupt handler from mbed common */
+/* Store IRQ context for each UART */
+static uintptr_t serial_irq_contexts[MODULES_SIZE_SERIAL] = { 0 }; /* Interrupt handler from mbed common */
 static uart_irq_handler irq_handler;
 /* Keep track of incoming DMA IRQ's */
 static bool serial_dma_irq_fired[DMA_CHAN_COUNT] = { false };
@@ -721,7 +720,7 @@ static void serial_enable(serial_t *obj, uint8_t enable)
             USART_Enable(obj->serial.periph.uart, usartDisable);
         }
     }
-    serial_irq_ids[serial_get_index(obj)] = 0;
+    serial_irq_contexts[serial_get_index(obj)] = 0;
 }
 
 /**
@@ -1017,13 +1016,13 @@ uint8_t serial_interrupt_enabled(serial_t *obj)
 
 /**
  * Set handler for all serial interrupts (is probably SerialBase::_handler())
- * and store IRQ ID to be returned to the handler upon interrupt. ID is
+ * and store IRQ Context to be returned to the handler upon interrupt. Context is
  * probably a pointer to the calling Serial object.
  */
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[serial_get_index(obj)] = id;
+    serial_irq_contexts[serial_get_index(obj)] = context;
 }
 
 /**
@@ -1032,9 +1031,9 @@ void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
 static void uart_irq(UARTName name, SerialIrq irq)
 {
     uint8_t index = serial_pointer_get_index((uint32_t)name);
-    if (serial_irq_ids[index] != 0) {
+    if (serial_irq_contexts[index] != 0) {
         /* Pass interrupt on to mbed common handler */
-        irq_handler(serial_irq_ids[index], irq);
+        irq_handler(serial_irq_contexts[index], irq);
         /* Clearing interrupt not necessary */
     }
 }

@@ -67,7 +67,7 @@ serial_t stdio_uart;
 static uart_irq_handler irq_handler;
 
 struct serial_global_data_s {
-    uint32_t serial_irq_id;
+    uintptr_t serial_irq_context;
     gpio_t sw_rts, sw_cts;
     serial_t *tranferring_obj, *receiving_obj;
     uint32_t async_tx_callback, async_rx_callback;
@@ -355,7 +355,7 @@ static void uart_tx_irq(uint32_t ch)
         }
     }
 
-    irq_handler(uart_data[ch].serial_irq_id, TxIrq);
+    irq_handler(uart_data[ch].serial_irq_context, TxIrq);
 }
 
 static void uart_rx_irq(uint32_t ch)
@@ -411,7 +411,7 @@ static void uart_rx_irq(uint32_t ch)
         }
     }
 
-    irq_handler(uart_data[ch].serial_irq_id, RxIrq);
+    irq_handler(uart_data[ch].serial_irq_context, RxIrq);
 }
 
 static void uart_err_irq(uint32_t ch)
@@ -506,10 +506,10 @@ static void uart4_er_irq(void)
     uart_err_irq(4);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    uart_data[obj->serial.ch].serial_irq_id = id;
+    uart_data[obj->serial.ch].serial_irq_context = context;
 }
 
 static void serial_irq_set_irq(IRQn_Type IRQn, IRQHandler handler, uint32_t enable)

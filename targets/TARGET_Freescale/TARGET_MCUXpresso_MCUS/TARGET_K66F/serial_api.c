@@ -33,7 +33,7 @@
 #include "dma_reqs.h"
 #include "fsl_clock_config.h"
 
-static uint32_t serial_irq_ids[FSL_FEATURE_SOC_UART_COUNT] = {0};
+static uintptr_t serial_irq_contexts[FSL_FEATURE_SOC_UART_COUNT] = {0};
 static uart_irq_handler irq_handler;
 /* Array of UART peripheral base address. */
 static UART_Type *const uart_addrs[] = UART_BASE_PTRS;
@@ -93,7 +93,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
 void serial_free(serial_t *obj)
 {
     UART_Deinit(uart_addrs[obj->serial.index]);
-    serial_irq_ids[obj->serial.index] = 0;
+    serial_irq_contexts[obj->serial.index] = 0;
 }
 
 void serial_baud(serial_t *obj, int baudrate)
@@ -141,12 +141,12 @@ static inline void uart_irq(uint32_t transmit_empty, uint32_t receive_full, uint
         (void)base->D;
     }
 
-    if (serial_irq_ids[index] != 0) {
+    if (serial_irq_contexts[index] != 0) {
         if (transmit_empty && (UART_GetEnabledInterrupts(uart_addrs[index]) & kUART_TxDataRegEmptyInterruptEnable))
-            irq_handler(serial_irq_ids[index], TxIrq);
+            irq_handler(serial_irq_contexts[index], TxIrq);
 
         if (receive_full && (UART_GetEnabledInterrupts(uart_addrs[index]) & kUART_RxDataRegFullInterruptEnable))
-            irq_handler(serial_irq_ids[index], RxIrq);
+            irq_handler(serial_irq_contexts[index], RxIrq);
     }
 }
 
@@ -180,10 +180,10 @@ void uart4_irq()
     uart_irq((status_flags & UART_S1_TDRE_MASK), (status_flags & UART_S1_RDRF_MASK), 4);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->serial.index] = id;
+    serial_irq_contexts[obj->serial.index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

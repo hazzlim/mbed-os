@@ -39,7 +39,7 @@
 #define UART_HWCONTROL_RTS      1
 #define UART_HWCONTROL_CTS      2
 #define UART_HWCONTROL_RTS_CTS  3
-static uint32_t serial_irq_ids[UART_NUM] = {0};
+static uintptr_t serial_irq_contexts[UART_NUM] = {0};
 static uart_irq_handler irq_handler;
 
 int stdio_uart_inited = 0;
@@ -172,8 +172,8 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
  ******************************************************************************/
 static inline void _uart_irq_handler(SerialIrq irq_type, uint32_t index)
 {
-    if (serial_irq_ids[index] != 0) {
-        irq_handler(serial_irq_ids[index], irq_type);
+    if (serial_irq_contexts[index] != 0) {
+        irq_handler(serial_irq_contexts[index], irq_type);
     }
 }
 
@@ -231,10 +231,10 @@ void uart2_irq(void)
     NVIC_ClearPendingIRQ((IRQn_Type)UARTR2_IRQn);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

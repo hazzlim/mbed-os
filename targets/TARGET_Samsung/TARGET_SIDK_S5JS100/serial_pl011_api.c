@@ -38,7 +38,7 @@
 static uart_irq_handler irq_handler[PL011_UART_MAX];
 
 struct serial_context_data_s {
-    uint32_t serial_irq_id;
+    uint32_t serial_irq_context;
     gpio_t sw_rts, sw_cts;
     uint8_t count, rx_irq_set_flow, rx_irq_set_api;
 };
@@ -73,7 +73,7 @@ static inline void uart_irq(t_pl011_ports_enum index,
 
     if (irq_type  == RxIrq) {
         if (uart_data[index].rx_irq_set_api) {
-            (irq_handler[index])(uart_data[index].serial_irq_id, irq_type);
+            (irq_handler[index])(uart_data[index].serial_irq_context, irq_type);
         }
     }
 
@@ -197,12 +197,12 @@ static void pl011_serial_format(void *obj, int data_bits,
     p_PL011_UART->LCRH = reg;
 }
 
-static void pl011_serial_irq_handler(void *obj, uart_irq_handler handler, uint32_t id)
+static void pl011_serial_irq_handler(void *obj, uart_irq_handler handler, uintptr_t context)
 {
     struct serial_s *priv = (struct serial_s *)obj;
 
     irq_handler[priv->index] = handler;
-    uart_data[priv->index].serial_irq_id = id;
+    uart_data[priv->index].serial_irq_context = context;
 }
 
 

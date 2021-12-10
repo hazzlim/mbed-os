@@ -39,7 +39,7 @@
 
 #define USI_PTR(ptr) ((S5JS100_USI_UART_TypeDef *)(ptr))
 static uart_irq_handler irq_handler[USI_MAX_PORTS];
-static uint32_t serial_irq_id[USI_MAX_PORTS] = {0};
+static uintptr_t serial_irq_context[USI_MAX_PORTS] = {0};
 
 
 
@@ -50,11 +50,11 @@ static inline void uart_irq(uint32_t intstatus, uint32_t index,
 {
 
     if (intstatus & (1 << 0)) {
-        (irq_handler[index])(serial_irq_id[index], RxIrq);
+        (irq_handler[index])(serial_irq_context[index], RxIrq);
     } else if (intstatus & (1 << 1)) {
         // RTS Int
     } else if (intstatus & (1 << 2)) {
-        (irq_handler[index])(serial_irq_id[index], TxIrq);
+        (irq_handler[index])(serial_irq_context[index], TxIrq);
     } else if (intstatus & (1 << 3)) {
         // CTS Int
     } else {
@@ -157,12 +157,12 @@ static void usi_serial_format(void *obj, int data_bits,
 }
 
 
-static void usi_serial_irq_handler(void *obj, uart_irq_handler handler, uint32_t id)
+static void usi_serial_irq_handler(void *obj, uart_irq_handler handler, uintptr_t context)
 {
     struct serial_s *priv = (struct serial_s *)obj;
 
     irq_handler[priv->index] = handler;
-    serial_irq_id[priv->index] = id;
+    serial_irq_context[priv->index] = context;
 }
 
 

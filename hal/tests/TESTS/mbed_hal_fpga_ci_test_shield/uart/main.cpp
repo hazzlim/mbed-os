@@ -59,9 +59,9 @@ typedef struct {
     uint32_t tx_cnt;
 } serial_test_data_t;
 
-static void test_irq_handler(uint32_t id, SerialIrq event)
+static void test_irq_handler(uintptr_t context, SerialIrq event)
 {
-    serial_test_data_t *td = (serial_test_data_t *)id;
+    serial_test_data_t *td = (serial_test_data_t *)context;
     int c = 0x01; // arbitrary, non-zero value
     if (event == RxIrq) {
         c = serial_getc(td->ser);
@@ -243,7 +243,7 @@ static void uart_test_common(int baudrate, int data_bits, SerialParity parity, i
         TEST_ASSERT_EQUAL(tester_buff, rx_buff[i]);
     }
 
-    serial_irq_handler(&serial, test_irq_handler, (uint32_t) &td);
+    serial_irq_handler(&serial, test_irq_handler, reinterpret_cast<uintptr_t>(&td));
 
     // DUT TX (IRQ) / FPGA RX
     tx_val = rand() % ((1 << test_buff_bits) - PUTC_REPS);

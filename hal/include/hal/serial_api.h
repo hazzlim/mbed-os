@@ -84,7 +84,7 @@ typedef enum {
     FlowControlRTSCTS
 } FlowControl;
 
-typedef void (*uart_irq_handler)(uint32_t id, SerialIrq event);
+typedef void (*uart_irq_handler)(uintptr_t context, SerialIrq event);
 
 #if DEVICE_SERIAL_ASYNCH
 /** Asynch serial HAL structure
@@ -256,9 +256,9 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
  *
  * @param obj     The serial object
  * @param handler The interrupt handler which will be invoked when the interrupt fires
- * @param id      The SerialBase object
+ * @param context The SerialBase object
  */
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id);
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context);
 
 /** Configure serial interrupt. This function is used for word-approach
  *

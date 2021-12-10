@@ -387,7 +387,7 @@ void serial_set_flow_control(serial_t *obj, FlowControl type, PinName rxflow, Pi
 
 #endif  //DEVICE_SERIAL_FC
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     // Flush Tx FIFO. Otherwise, output data may get lost on this change.
     while (! UART_IS_TX_EMPTY(((UART_T *) NU_MODBASE(obj->serial.uart))));
@@ -397,7 +397,7 @@ void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
     MBED_ASSERT(modinit->modname == (int) obj->serial.uart);
     
     obj->serial.irq_handler = (uint32_t) handler;
-    obj->serial.irq_id = id;
+    obj->serial.irq_id = context;
     
     // Restore sync-mode vector
     obj->serial.vec = ((struct nu_uart_var *) modinit->var)->vec;
