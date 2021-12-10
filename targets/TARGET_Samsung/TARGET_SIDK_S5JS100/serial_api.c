@@ -158,9 +158,9 @@ void serial_format(serial_t *obj, int data_bits,
 }
 
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
-    obj->ops.serial_irq_handler(obj, handler, id);
+    obj->ops.serial_irq_handler(obj, handler, context);
 }
 
 

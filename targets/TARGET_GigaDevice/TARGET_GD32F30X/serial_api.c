@@ -28,7 +28,7 @@
 
 #define USART_NUM (5)
 
-static uint32_t serial_irq_ids[USART_NUM]   = {0};
+static uintptr_t serial_irq_contexts[USART_NUM]   = {0};
 static rcu_periph_enum usart_clk[USART_NUM] = {RCU_USART0, RCU_USART1, RCU_USART2, RCU_UART3, RCU_UART4};
 static IRQn_Type usart_irq_n[USART_NUM]     = {USART0_IRQn, USART1_IRQn, USART2_IRQn, UART3_IRQn, UART4_IRQn};
 
@@ -159,7 +159,7 @@ void serial_free(serial_t *obj)
     usart_deinit(p_obj->uart);
     rcu_periph_clock_disable(rcu_periph);
 
-    serial_irq_ids[p_obj->index] = 0;
+    serial_irq_contexts[p_obj->index] = 0;
 
     /* reset the GPIO state */
     pin_function(p_obj->pin_tx, MODE_IN_FLOATING);
@@ -266,12 +266,12 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
  * @param handler The interrupt handler which will be invoked when the interrupt fires
  * @param id      The SerialBase object
  */
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     struct serial_s *p_obj = GET_SERIAL_S(obj);
 
     irq_handler = handler;
-    serial_irq_ids[p_obj->index] = id;
+    serial_irq_contexts[p_obj->index] = context;
 }
 
 /** This function handles USART interrupt handler
@@ -281,15 +281,15 @@ void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
  */
 static void usart_irq(int usart_index, uint32_t usart_periph)
 {
-    if (serial_irq_ids[usart_index] != 0) {
+    if (serial_irq_contexts[usart_index] != 0) {
         if (usart_interrupt_flag_get(usart_periph, USART_INT_FLAG_TC) != RESET) {
             usart_interrupt_flag_clear(usart_periph, USART_FLAG_TC);
-            irq_handler(serial_irq_ids[usart_index], TxIrq);
+            irq_handler(serial_irq_contexts[usart_index], TxIrq);
         }
 
         if (usart_interrupt_flag_get(usart_periph, USART_INT_FLAG_RBNE) != RESET) {
             usart_interrupt_flag_clear(usart_periph, USART_FLAG_RBNE);
-            irq_handler(serial_irq_ids[usart_index], RxIrq);
+            irq_handler(serial_irq_contexts[usart_index], RxIrq);
         }
 
         if (usart_interrupt_flag_get(usart_periph, USART_INT_FLAG_ERR_ORERR) != RESET) {

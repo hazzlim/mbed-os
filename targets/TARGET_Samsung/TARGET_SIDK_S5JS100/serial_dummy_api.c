@@ -48,7 +48,7 @@ static void dummy_serial_format(void *obj, int data_bits,
 {
 }
 
-static void dummy_serial_irq_handler(void *obj, uart_irq_handler handler, uint32_t id)
+static void dummy_serial_irq_handler(void *obj, uart_irq_handler handler, uintptr_t context)
 {
 }
 

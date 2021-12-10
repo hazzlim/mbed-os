@@ -31,7 +31,7 @@
 #include "clock_config.h"
 #include "gpio_api.h"
 
-static uint32_t serial_irq_ids[FSL_FEATURE_SOC_USART_COUNT] = {0};
+static uintptr_t serial_irq_contexts[FSL_FEATURE_SOC_USART_COUNT] = {0};
 static uart_irq_handler irq_handler;
 /* Array of UART peripheral base address. */
 static USART_Type *const uart_addrs[] = USART_BASE_PTRS;
@@ -140,7 +140,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
 void serial_free(serial_t *obj)
 {
     USART_Deinit(uart_addrs[obj->index]);
-    serial_irq_ids[obj->index] = 0;
+    serial_irq_contexts[obj->index] = 0;
 }
 
 void serial_baud(serial_t *obj, int baudrate)
@@ -189,12 +189,12 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
  ******************************************************************************/
 static inline void uart_irq(uint32_t transmit_empty, uint32_t receive_not_empty, uint32_t index)
 {
-    if (serial_irq_ids[index] != 0) {
+    if (serial_irq_contexts[index] != 0) {
         if (transmit_empty && (uart_addrs[index]->FIFOINTENSET & kUSART_TxLevelInterruptEnable))
-            irq_handler(serial_irq_ids[index], TxIrq);
+            irq_handler(serial_irq_contexts[index], TxIrq);
 
         if (receive_not_empty && (uart_addrs[index]->FIFOINTENSET & kUSART_RxLevelInterruptEnable))
-            irq_handler(serial_irq_ids[index], RxIrq);
+            irq_handler(serial_irq_contexts[index], RxIrq);
     }
 }
 
@@ -262,10 +262,10 @@ void uart9_irq()
 }
 #endif
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

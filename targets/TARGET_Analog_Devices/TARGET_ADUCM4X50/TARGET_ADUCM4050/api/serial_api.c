@@ -57,7 +57,7 @@
 
 static ADI_UART_HANDLE hDevice[ADI_UART_NUM_DEVICES];
 static uint32_t UartDeviceMem[ADI_UART_NUM_DEVICES][(ADI_UART_MEMORY_SIZE + 3)/4];
-static uint32_t serial_irq_ids[ADI_UART_NUM_DEVICES] = {0};
+static uintptr_t serial_irq_contexts[ADI_UART_NUM_DEVICES] = {0};
 static uart_irq_handler irq_handler = NULL;
 int stdio_uart_inited = 0;
 serial_t stdio_uart;
@@ -69,9 +69,9 @@ static void uart_callback(void *pCBParam, uint32_t Event, void *pArg)
     MBED_ASSERT(irq_handler);
     serial_t *obj = pCBParam;
     if (Event == ADI_UART_EVENT_TX_BUFFER_PROCESSED)
-        irq_handler(serial_irq_ids[obj->index], TxIrq);
+        irq_handler(serial_irq_contexts[obj->index], TxIrq);
     else if (Event == ADI_UART_EVENT_RX_BUFFER_PROCESSED)
-        irq_handler(serial_irq_ids[obj->index], RxIrq);
+        irq_handler(serial_irq_contexts[obj->index], RxIrq);
 }
 
 
@@ -239,13 +239,13 @@ void serial_break_clear(serial_t *obj)
     adi_uart_ForceTxBreak(hDevice[obj->index], false);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
 
     MBED_ASSERT(obj);
 
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 const PinMap *serial_tx_pinmap()

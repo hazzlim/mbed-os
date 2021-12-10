@@ -131,10 +131,10 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity,
                             uart_word_len, uart_parity, uart_stop_bits);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     uart_irq[obj->uart_index].handler = handler;
-    uart_irq[obj->uart_index].id = id;
+    uart_irq[obj->uart_index].id = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
