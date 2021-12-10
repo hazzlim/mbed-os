@@ -23,6 +23,7 @@
 #include "device.h"
 #include "pinmap.h"
 #include <stdbool.h>
+#include <stddef.h>
 
 #if DEVICE_OSPI
 
