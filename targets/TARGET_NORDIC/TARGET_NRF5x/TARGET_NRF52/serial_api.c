@@ -1231,9 +1231,9 @@ void serial_pinout_tx(PinName tx)
  *
  * Param obj     The serial object
  * Param handler The interrupt handler which will be invoked when the interrupt fires
- * Param id      The SerialBase object
+ * Param context The SerialBase object
  */
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     MBED_ASSERT(obj);
 
@@ -1245,7 +1245,7 @@ void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
 
     /* Store handler and ID in serial object. */
     uart_object->handler = (uint32_t) handler;
-    uart_object->context = id;
+    uart_object->context = context;
 }
 
 /** Configure serial interrupt. This function is used for word-approach

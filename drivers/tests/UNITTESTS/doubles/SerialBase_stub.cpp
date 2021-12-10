@@ -60,7 +60,7 @@ void SerialBase::attach(Callback<void()> func, IrqType type)
 {
 }
 
-void SerialBase::_irq_handler(uint32_t id, SerialIrq irq_type)
+void SerialBase::_irq_handler(uintptr_t context, SerialIrq irq_type)
 {
 }
 

@@ -31,7 +31,7 @@
 #include "fsl_clock_config.h"
 
 /* LPUART starts from index 1 */
-static uint32_t serial_irq_ids[FSL_FEATURE_SOC_LPUART_COUNT + 1] = {0};
+static uintptr_t serial_irq_contexts[FSL_FEATURE_SOC_LPUART_COUNT + 1] = {0};
 static uart_irq_handler irq_handler;
 /* Array of UART peripheral base address. */
 static LPUART_Type *const uart_addrs[] = LPUART_BASE_PTRS;
@@ -80,7 +80,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
 void serial_free(serial_t *obj)
 {
     LPUART_Deinit(uart_addrs[obj->index]);
-    serial_irq_ids[obj->index] = 0;
+    serial_irq_contexts[obj->index] = 0;
 }
 
 void serial_baud(serial_t *obj, int baudrate)
@@ -129,13 +129,13 @@ static inline void uart_irq(uint32_t transmit_empty, uint32_t receive_full, uint
         LPUART_ClearStatusFlags(base, kLPUART_RxOverrunFlag);
     }
 
-    if (serial_irq_ids[index] != 0) {
+    if (serial_irq_contexts[index] != 0) {
         if (transmit_empty) {
-            irq_handler(serial_irq_ids[index], TxIrq);
+            irq_handler(serial_irq_contexts[index], TxIrq);
         }
 
         if (receive_full) {
-            irq_handler(serial_irq_ids[index], RxIrq);
+            irq_handler(serial_irq_contexts[index], RxIrq);
         }
     }
 }
@@ -164,10 +164,10 @@ void uart4_irq()
     uart_irq((status_flags & kLPUART_TxDataRegEmptyFlag), (status_flags & kLPUART_RxDataRegFullFlag), 4);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

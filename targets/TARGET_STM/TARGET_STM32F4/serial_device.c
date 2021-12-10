@@ -29,7 +29,7 @@
 #define UART_NUM (10) // max value // TARGET_STM32F413xH
 #endif
 
-uint32_t serial_irq_ids[UART_NUM] = {0};
+uintptr_t serial_irq_contexts[UART_NUM] = {0};
 UART_HandleTypeDef uart_handlers[UART_NUM];
 
 static uart_irq_handler irq_handler;
@@ -47,15 +47,15 @@ static void uart_irq(UARTName uart_name)
 
     if (id >= 0) {
         UART_HandleTypeDef *huart = &uart_handlers[id];
-        if (serial_irq_ids[id] != 0) {
+        if (serial_irq_contexts[id] != 0) {
             if (__HAL_UART_GET_FLAG(huart, UART_FLAG_TXE) != RESET) {
                 if (__HAL_UART_GET_IT_SOURCE(huart, UART_IT_TXE) != RESET) {
-                    irq_handler(serial_irq_ids[id], TxIrq);
+                    irq_handler(serial_irq_contexts[id], TxIrq);
                 }
             }
             if (__HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE) != RESET) {
                 if (__HAL_UART_GET_IT_SOURCE(huart, UART_IT_RXNE) != RESET) {
-                    irq_handler(serial_irq_ids[id], RxIrq);
+                    irq_handler(serial_irq_contexts[id], RxIrq);
                     /* Flag has been cleared when reading the content */
                 }
             }
@@ -138,12 +138,12 @@ static void uart10_irq(void)
 }
 #endif
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     struct serial_s *obj_s = SERIAL_S(obj);
 
     irq_handler = handler;
-    serial_irq_ids[obj_s->index] = id;
+    serial_irq_contexts[obj_s->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

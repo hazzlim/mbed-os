@@ -114,9 +114,9 @@ void SerialBase::attach(Callback<void()> func, IrqType type)
     unlock();
 }
 
-void SerialBase::_irq_handler(uint32_t id, SerialIrq irq_type)
+void SerialBase::_irq_handler(uintptr_t context, SerialIrq irq_type)
 {
-    SerialBase *handler = (SerialBase *)id;
+    SerialBase *handler = reinterpret_cast<SerialBase *>(context);
     if (handler->_irq[irq_type]) {
         handler->_irq[irq_type]();
     }
@@ -144,7 +144,7 @@ void SerialBase::_init()
     }
 #endif
     serial_baud(&_serial, _baud);
-    serial_irq_handler(&_serial, SerialBase::_irq_handler, (uint32_t)this);
+    serial_irq_handler(&_serial, SerialBase::_irq_handler, reinterpret_cast<uintptr_t>(this));
 }
 
 void SerialBase::_init_direct()
@@ -156,7 +156,7 @@ void SerialBase::_init_direct()
     }
 #endif
     serial_baud(&_serial, _baud);
-    serial_irq_handler(&_serial, SerialBase::_irq_handler, (uint32_t)this);
+    serial_irq_handler(&_serial, SerialBase::_irq_handler, reinterpret_cast<uintptr_t>(this));
 }
 
 void SerialBase::_deinit()
