@@ -22,6 +22,7 @@
 
 #include "device.h"
 #include "pinmap.h"
+#include <stddef.h>
 #include <stdbool.h>
 
 #if DEVICE_QSPI
