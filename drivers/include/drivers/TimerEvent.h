@@ -43,7 +43,7 @@ protected:
      *
      *  @param id       Timer Event ID
      */
-    static void irq(uint32_t id);
+    static void irq(uintptr_t id);
 
     /** Destruction removes it...
      */

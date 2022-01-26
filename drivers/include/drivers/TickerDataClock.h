@@ -93,7 +93,7 @@ public:
      * @param timestamp The event's timestamp
      * @param id        The event object
      */
-    void insert_event(ticker_event_t *obj, time_point timestamp, uint32_t id)
+    void insert_event(ticker_event_t *obj, time_point timestamp, uintptr_t id)
     {
         ticker_insert_event_us(_ticker, obj, timestamp.time_since_epoch().count(), id);
     }
