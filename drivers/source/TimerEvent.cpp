@@ -28,7 +28,7 @@ TimerEvent::TimerEvent(const ticker_data_t *data) : event(), _ticker_data(data)
     _ticker_data.set_handler(irq);
 }
 
-void TimerEvent::irq(uint32_t id)
+void TimerEvent::irq(uintptr_t id)
 {
     TimerEvent *timer_event = reinterpret_cast<TimerEvent *>(id);
     timer_event->handler();
@@ -42,7 +42,7 @@ TimerEvent::~TimerEvent()
 // insert in to linked list
 void TimerEvent::insert(timestamp_t timestamp)
 {
-    ticker_insert_event(_ticker_data, &event, timestamp, (uint32_t)this);
+    ticker_insert_event(_ticker_data, &event, timestamp, reinterpret_cast<uintptr_t>(this));
 }
 
 void TimerEvent::insert(microseconds rel_time)
@@ -52,12 +52,12 @@ void TimerEvent::insert(microseconds rel_time)
 
 void TimerEvent::insert_absolute(us_timestamp_t timestamp)
 {
-    ticker_insert_event_us(_ticker_data, &event, timestamp, (uint32_t)this);
+    ticker_insert_event_us(_ticker_data, &event, timestamp, reinterpret_cast<uintptr_t>(this));
 }
 
 void TimerEvent::insert_absolute(TickerDataClock::time_point timestamp)
 {
-    _ticker_data.insert_event(&event, timestamp, (uint32_t)this);
+    _ticker_data.insert_event(&event, timestamp, reinterpret_cast<uintptr_t>(this));
 }
 
 void TimerEvent::remove()

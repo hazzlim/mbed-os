@@ -366,7 +366,7 @@ static timestamp_t compute_tick_round_up(const ticker_data_t *const ticker, us_t
 }
 
 //NOTE: Must be called from critical section!
-static void insert_event(const ticker_data_t *const ticker, ticker_event_t *obj, us_timestamp_t timestamp, uint32_t id)
+static void insert_event(const ticker_data_t *const ticker, ticker_event_t *obj, us_timestamp_t timestamp, uintptr_t id)
 {
     ticker_event_queue_t *queue = ticker->queue;
 
@@ -521,7 +521,7 @@ void ticker_irq_handler(const ticker_data_t *const ticker)
 }
 
 
-void ticker_insert_event(const ticker_data_t *const ticker, ticker_event_t *obj, timestamp_t timestamp, uint32_t id)
+void ticker_insert_event(const ticker_data_t *const ticker, ticker_event_t *obj, timestamp_t timestamp, uintptr_t id)
 {
     core_util_critical_section_enter();
 
@@ -537,7 +537,7 @@ void ticker_insert_event(const ticker_data_t *const ticker, ticker_event_t *obj,
     core_util_critical_section_exit();
 }
 
-void ticker_insert_event_us(const ticker_data_t *const ticker, ticker_event_t *obj, us_timestamp_t timestamp, uint32_t id)
+void ticker_insert_event_us(const ticker_data_t *const ticker, ticker_event_t *obj, us_timestamp_t timestamp, uintptr_t id)
 {
     core_util_critical_section_enter();
 
