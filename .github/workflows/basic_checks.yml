@@ -222,14 +222,16 @@ jobs:
 
       -
         name: cmake unittest
+        uses: codecov/codecov-action@v2
+        with:
+          token: 57166f89-22b3-4949-9488-ddd3c78123fb
+          files: coverage.xml
+          flags: unittests
         run: |
-          set -x     
+          set -x
           ctest --build-and-test . build --build-generator Ninja --build-options -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON --test-command ctest        
           gcovr --gcov-executable gcov -r . ./build -s -e ".*\.h" --exclude-directories=${GITHUB_WORKSPACE}/build/UNITTESTS --exclude-directories=${GITHUB_WORKSPACE}/build/_deps
           ccache -s
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -F unittests -f "coverage.xml" -t 57166f89-22b3-4949-9488-ddd3c78123fb
 
   # Reject any changes to tools that would require a re-release of the
   # tools for the online compiler.
