@@ -24,6 +24,14 @@ SerialBase::SerialBase(PinName tx, PinName rx, int baud) :
 {
 }
 
+SerialBase::SerialBase(const serial_pinmap_t &static_pinmap, int baud) :
+    _baud(baud),
+    _tx_pin(static_pinmap.tx_pin),
+    _rx_pin(static_pinmap.rx_pin),
+    _static_pinmap(&static_pinmap)
+{
+}
+
 SerialBase::~SerialBase()
 {
 
@@ -52,7 +60,7 @@ void SerialBase::attach(Callback<void()> func, IrqType type)
 {
 }
 
-void SerialBase::_irq_handler(uint32_t id, SerialIrq irq_type)
+void SerialBase::_irq_handler(uintptr_t context, SerialIrq irq_type)
 {
 }
 
@@ -66,6 +74,14 @@ int SerialBase::_base_putc(int c)
     return 0;
 }
 
+void SerialBase::enable_input(bool enable)
+{
+}
+
+void SerialBase::enable_output(bool enable)
+{
+}
+
 void SerialBase::send_break()
 {
 }
@@ -77,5 +93,11 @@ void SerialBase::lock()
 void SerialBase:: unlock()
 {
 }
+
+#if DEVICE_SERIAL_FC
+void SerialBase::set_flow_control(Flow type, PinName flow1, PinName flow2)
+{
+}
+#endif // DEVICE_SERIAL_FC
 
 }

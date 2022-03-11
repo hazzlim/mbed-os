@@ -52,7 +52,7 @@
  * INITIALIZATION
  ******************************************************************************/
 
-static uint32_t serial_irq_ids[UART_NUM] = {0};
+static uintptr_t serial_irq_contexts[UART_NUM] = {0};
 static uart_irq_handler irq_handler;
 
 int stdio_uart_inited = 0;
@@ -124,7 +124,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx) {
 }
 
 void serial_free(serial_t *obj) {
-    serial_irq_ids[obj->index] = 0;
+    serial_irq_contexts[obj->index] = 0;
 }
 
 // serial_baud
@@ -202,12 +202,12 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
  * INTERRUPTS HANDLING
  ******************************************************************************/
 static inline void uart_irq(uint8_t status, uint32_t index) {
-    if (serial_irq_ids[index] != 0) {
+    if (serial_irq_contexts[index] != 0) {
         if (status & UARTLP_S1_TDRE_MASK)
-            irq_handler(serial_irq_ids[index], TxIrq);
+            irq_handler(serial_irq_contexts[index], TxIrq);
 
         if (status & UARTLP_S1_RDRF_MASK)
-            irq_handler(serial_irq_ids[index], RxIrq);
+            irq_handler(serial_irq_contexts[index], RxIrq);
     }
 }
 
@@ -221,9 +221,9 @@ void uart1_irq() {uart_irq(UART1->S1, 1);}
 void uart2_irq() {uart_irq(UART2->S1, 2);}
 #endif
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id) {
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context) {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_contexts[obj->index] = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable) {

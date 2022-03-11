@@ -36,7 +36,7 @@
 
 struct uart_irq_t {
     uart_irq_handler handler;
-    uint32_t id;
+    uintptr_t context;
 };
 
 static const PinMap PinMap_UART_TX[] = {
@@ -144,7 +144,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
 
 void serial_free(serial_t *obj)
 {
-    uart_irq[obj->index].id = 0;
+    uart_irq[obj->index].context = 0;
     uart_irq[obj->index].handler = 0;
 }
 
@@ -178,14 +178,14 @@ void UART0_IRQHandler()
     if(uart_irq[UART_0].handler) {
         switch(irq) {
         case ARM_UART_IRQ_RX:
-            uart_irq[UART_0].handler(uart_irq[UART_0].id, RxIrq);
+            uart_irq[UART_0].handler(uart_irq[UART_0].context, RxIrq);
             break;
         case ARM_UART_IRQ_TX:
-            uart_irq[UART_0].handler(uart_irq[UART_0].id, TxIrq);
+            uart_irq[UART_0].handler(uart_irq[UART_0].context, TxIrq);
             break;
         case ARM_UART_IRQ_COMBINED:
-            uart_irq[UART_0].handler(uart_irq[UART_0].id, RxIrq);
-            uart_irq[UART_0].handler(uart_irq[UART_0].id, TxIrq);
+            uart_irq[UART_0].handler(uart_irq[UART_0].context, RxIrq);
+            uart_irq[UART_0].handler(uart_irq[UART_0].context, TxIrq);
             break;
         case ARM_UART_IRQ_NONE:
         default:
@@ -203,14 +203,14 @@ void UART1_IRQHandler()
     if(uart_irq[UART_1].handler) {
         switch(irq) {
         case ARM_UART_IRQ_RX:
-            uart_irq[UART_1].handler(uart_irq[UART_1].id, RxIrq);
+            uart_irq[UART_1].handler(uart_irq[UART_1].context, RxIrq);
             break;
         case ARM_UART_IRQ_TX:
-            uart_irq[UART_1].handler(uart_irq[UART_1].id, TxIrq);
+            uart_irq[UART_1].handler(uart_irq[UART_1].context, TxIrq);
             break;
         case ARM_UART_IRQ_COMBINED:
-            uart_irq[UART_1].handler(uart_irq[UART_1].id, RxIrq);
-            uart_irq[UART_1].handler(uart_irq[UART_1].id, TxIrq);
+            uart_irq[UART_1].handler(uart_irq[UART_1].context, RxIrq);
+            uart_irq[UART_1].handler(uart_irq[UART_1].context, TxIrq);
             break;
         case ARM_UART_IRQ_NONE:
         default:
@@ -228,14 +228,14 @@ void UART2_IRQHandler()
     if(uart_irq[UART_2].handler) {
         switch(irq) {
         case ARM_UART_IRQ_RX:
-            uart_irq[UART_2].handler(uart_irq[UART_2].id, RxIrq);
+            uart_irq[UART_2].handler(uart_irq[UART_2].context, RxIrq);
             break;
         case ARM_UART_IRQ_TX:
-            uart_irq[UART_2].handler(uart_irq[UART_2].id, TxIrq);
+            uart_irq[UART_2].handler(uart_irq[UART_2].context, TxIrq);
             break;
         case ARM_UART_IRQ_COMBINED:
-            uart_irq[UART_2].handler(uart_irq[UART_2].id, RxIrq);
-            uart_irq[UART_2].handler(uart_irq[UART_2].id, TxIrq);
+            uart_irq[UART_2].handler(uart_irq[UART_2].context, RxIrq);
+            uart_irq[UART_2].handler(uart_irq[UART_2].context, TxIrq);
             break;
         case ARM_UART_IRQ_NONE:
         default:
@@ -253,14 +253,14 @@ void UART3_IRQHandler()
     if(uart_irq[UART_3].handler) {
         switch(irq) {
         case ARM_UART_IRQ_RX:
-            uart_irq[UART_3].handler(uart_irq[UART_3].id, RxIrq);
+            uart_irq[UART_3].handler(uart_irq[UART_3].context, RxIrq);
             break;
         case ARM_UART_IRQ_TX:
-            uart_irq[UART_3].handler(uart_irq[UART_3].id, TxIrq);
+            uart_irq[UART_3].handler(uart_irq[UART_3].context, TxIrq);
             break;
         case ARM_UART_IRQ_COMBINED:
-            uart_irq[UART_3].handler(uart_irq[UART_3].id, RxIrq);
-            uart_irq[UART_3].handler(uart_irq[UART_3].id, TxIrq);
+            uart_irq[UART_3].handler(uart_irq[UART_3].context, RxIrq);
+            uart_irq[UART_3].handler(uart_irq[UART_3].context, TxIrq);
             break;
         case ARM_UART_IRQ_NONE:
         default:
@@ -278,14 +278,14 @@ void UART4_IRQHandler()
     if(uart_irq[UART_4].handler) {
         switch(irq) {
         case ARM_UART_IRQ_RX:
-            uart_irq[UART_4].handler(uart_irq[UART_4].id, RxIrq);
+            uart_irq[UART_4].handler(uart_irq[UART_4].context, RxIrq);
             break;
         case ARM_UART_IRQ_TX:
-            uart_irq[UART_4].handler(uart_irq[UART_4].id, TxIrq);
+            uart_irq[UART_4].handler(uart_irq[UART_4].context, TxIrq);
             break;
         case ARM_UART_IRQ_COMBINED:
-            uart_irq[UART_4].handler(uart_irq[UART_4].id, RxIrq);
-            uart_irq[UART_4].handler(uart_irq[UART_4].id, TxIrq);
+            uart_irq[UART_4].handler(uart_irq[UART_4].context, RxIrq);
+            uart_irq[UART_4].handler(uart_irq[UART_4].context, TxIrq);
             break;
         case ARM_UART_IRQ_NONE:
         default:
@@ -295,10 +295,10 @@ void UART4_IRQHandler()
 }
 #endif /* ARM_UART4 */
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     uart_irq[obj->index].handler = handler;
-    uart_irq[obj->index].id = id;
+    uart_irq[obj->index].context = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)

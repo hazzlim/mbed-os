@@ -1,0 +1,73 @@
+# Copyright (c) 2013-2019 Arm Limited. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the License); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+language: sh
+os: linux
+dist: focal
+
+
+env:
+  global:
+    - deps_url="https://mbed-os-ci-public.s3-eu-west-1.amazonaws.com/jenkins-ci/deps"
+    - deps_dir="${HOME}/.cache/deps"
+
+cache:
+  pip: true
+  ccache: true
+  directories:
+    - ${HOME}/.cache/deps
+
+before_install:
+  - source tools/test/travis-ci/functions.sh
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb https://apt.kitware.com/ubuntu/ focal main'
+        key_url: 'https://apt.kitware.com/keys/kitware-archive-latest.asc'
+    packages:
+      - cmake
+      - ninja-build
+      - gcovr
+      - libncursesw5
+      - g++-7
+
+matrix:
+  include:
+
+    ### Mbed OS unittest ###
+    - &cmake-build-run-unittest
+      stage: "CMake"
+      name: "CMake unittest build"
+      env: NAME=cmake_unittest
+      install:
+        # Hide Travis-preinstalled CMake
+        # The Travis-preinstalled CMake is unfortunately not installed via apt, so we
+        # can't replace it with an apt-supplied version very easily. Additionally, we
+        # can't permit the Travis-preinstalled copy to survive, as the Travis default
+        # path lists the Travis CMake install location ahead of any place where apt
+        # would install CMake to. Instead of apt removing or upgrading to a new CMake
+        # version, we must instead delete the Travis copy of CMake.
+        - sudo rm -rf /usr/local/cmake*
+      script:
+        - echo ctest --build-and-test . build --build-generator Ninja --build-options -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 --test-command ctest        
+        - ctest --build-and-test . build --build-generator Ninja --build-options -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 --test-command ctest        
+        - gcovr --gcov-executable gcov-7 -r . ./build -s -x coverage.xml -e ".*\.h" --exclude-directories=$TRAVIS_BUILD_DIR/build/UNITTESTS --exclude-directories=$TRAVIS_BUILD_DIR/build/_deps
+        - ccache -s
+        - curl -Os https://uploader.codecov.io/latest/linux/codecov
+        - chmod +x codecov
+        - ./codecov -F unittests -f "coverage.xml" -t 57166f89-22b3-4949-9488-ddd3c78123fb
+

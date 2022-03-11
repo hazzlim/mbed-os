@@ -206,10 +206,10 @@ void uart1_handler(void) { uart_handler(objs[1]); }
 void uart2_handler(void) { uart_handler(objs[2]); }
 
 //******************************************************************************
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    obj->id = id;
+    obj->id = context;
 }
 
 //******************************************************************************

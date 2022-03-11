@@ -21,4 +21,8 @@
 #include "objects.h"
 #include "PinNames.h"
 
+#if DEVICE_CRC
+#define HAL_CRC_IS_SUPPORTED(polynomial, width) false
+#endif // DEVICE_CRC
+
 #endif

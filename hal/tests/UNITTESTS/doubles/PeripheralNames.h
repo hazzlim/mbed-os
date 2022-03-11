@@ -18,4 +18,8 @@
 #ifndef MBED_PERIPHERALNAMES_H
 #define MBED_PERIPHERALNAMES_H
 
+typedef enum {
+    SPI_1,
+} SPIName;
+
 #endif

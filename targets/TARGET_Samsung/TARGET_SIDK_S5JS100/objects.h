@@ -67,7 +67,7 @@ typedef enum {
 struct uart_ops_s {
     void (*serial_baud)(void *obj, int baudrate);
     void (*serial_format)(void *obj, int data_bits, SerialParity parity, int stop_bits);
-    void (*serial_irq_handler)(void *obj, uart_irq_handler handler, uint32_t id);
+    void (*serial_irq_handler)(void *obj, uart_irq_handler handler, uintptr_t context);
     void (*serial_irq_set)(void *obj, SerialIrq irq, uint32_t enable);
     void (*serial_putc)(void *obj, int c);
     int (*serial_writable)(void *obj);

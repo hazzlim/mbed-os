@@ -173,7 +173,7 @@ public:
     void set_flow_control(Flow type, const serial_fc_pinmap_t &static_pinmap);
 #endif
 
-    static void _irq_handler(uint32_t id, SerialIrq irq_type);
+    static void _irq_handler(uintptr_t context, SerialIrq irq_type);
 
 #if DEVICE_SERIAL_ASYNCH
 

@@ -221,10 +221,10 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
     MBED_ASSERT(am_hal_uart_configure_fifo(obj->serial.uart_control->handle, &(obj->serial.uart_control->cfg), false) == AM_HAL_STATUS_SUCCESS);
 }
 
-void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
+void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uintptr_t context)
 {
     irq_handler = handler;
-    obj->serial.uart_control->serial_irq_id = id;
+    obj->serial.uart_control->serial_irq_id = context;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
